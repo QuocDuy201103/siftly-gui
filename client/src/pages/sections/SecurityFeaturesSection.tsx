@@ -25,7 +25,7 @@ export const SecurityFeaturesSection = (): JSX.Element => {
       <div className="inline-flex flex-col items-center gap-5 relative flex-[0_0_auto]">
         <div className="inline-flex flex-col items-center justify-center relative flex-[0_0_auto]">
           <h2 className="relative w-fit mt-[-1.00px] bg-[linear-gradient(90deg,rgba(51,255,249,1)_0%,rgba(39,180,222,1)_25%,rgba(22,69,181,1)_100%)] [-webkit-background-clip:text] bg-clip-text [-webkit-text-fill-color:transparent] [text-fill-color:transparent] [font-family:'Montserrat',Helvetica] font-bold text-transparent text-[32px] tracking-[0] leading-[normal]">
-            YOUR PRIVACY IS SACRES
+            YOUR PRIVACY IS SACRED
           </h2>
         </div>
 
