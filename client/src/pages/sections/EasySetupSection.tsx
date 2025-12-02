@@ -132,7 +132,7 @@ const rightBenefits = [
 
 export const EasySetupSection = (): JSX.Element => {
   return (
-    <section className="flex flex-col w-full max-w-[1000px] mx-auto items-center gap-[100px] px-4">
+    <section className="flex flex-col w-full max-w-[1000px] mx-auto items-center gap-[100px] mt-20 px-4">
       <header className="flex flex-col w-full max-w-[512px] items-center gap-5">
         <div className="inline-flex flex-col items-center justify-center">
           <h2 className="w-fit [font-family:'Montserrat',Helvetica] font-bold text-white text-[32px] tracking-[0] leading-[normal]">
@@ -175,7 +175,11 @@ export const EasySetupSection = (): JSX.Element => {
               <img
                 className="w-[91.92px] h-[91.92px] object-cover"
                 alt="Arrow pointing right"
-                src="/figmaAssets/arrow-up-2.png"
+                src={
+                  index === 0
+                    ? "/figmaAssets/arrow-up-1.png"
+                    : "/figmaAssets/arrow-up-2.png"
+                }
               />
             )}
           </React.Fragment>
@@ -187,7 +191,7 @@ export const EasySetupSection = (): JSX.Element => {
           {leftBenefits.map((benefit, index) => (
             <div
               key={index}
-              className="flex items-center justify-center gap-2.5 px-8 py-3 w-full rounded-[32px] border-[none] before:content-[''] before:absolute before:inset-0 before:p-[0.5px] before:rounded-[32px] before:[background:linear-gradient(180deg,rgba(255,255,255,0.9)_0%,rgba(255,255,255,0.5)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none relative"
+              className="flex items-center justify-center gap-2.5 px-8 w-[260px] h-[70px] rounded-[100px] border border-solid border-[#ffffff4d] relative z-10"
             >
               <div className="w-fit [font-family:'Montserrat',Helvetica] font-normal text-transparent text-center tracking-[0]">
                 {benefit.content}
@@ -200,7 +204,7 @@ export const EasySetupSection = (): JSX.Element => {
           {rightBenefits.map((benefit, index) => (
             <div
               key={index}
-              className={`flex items-center justify-center gap-2.5 px-8 py-3 w-full rounded-[32px] border-[none] ${benefit.hasShadow ? "shadow-[0px_4px_4px_#00000040]" : ""} before:content-[''] before:absolute before:inset-0 before:p-[0.5px] before:rounded-[32px] before:[background:linear-gradient(180deg,rgba(255,255,255,0.9)_0%,rgba(255,255,255,0.5)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none relative`}
+              className={`flex items-center justify-center gap-2.5 px-8 w-[260px] h-[70px] rounded-[100px] border border-solid border-[#ffffff4d] relative z-10 ${benefit.hasShadow ? "shadow-[0px_4px_4px_#00000040]" : ""}`}
             >
               <div className="w-fit [font-family:'Montserrat',Helvetica] font-normal text-transparent text-center tracking-[0]">
                 {benefit.content}
@@ -209,12 +213,12 @@ export const EasySetupSection = (): JSX.Element => {
           ))}
         </div>
 
-        <div className="absolute top-[19px] left-[calc(50.00%_-_137px)] w-[343px] h-[378px] bg-[#02b2fb] rounded-[1000px] blur-[250px]" />
+        <div className="absolute top-[19px] left-[calc(50.00%_-_137px)] w-[343px] h-[378px] rounded-[1000px] blur-[250px]" />
 
         <img
-          className="absolute w-[87.50%] h-full top-0 left-[6.30%]"
+          className="absolute w-auto h-auto top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 object-contain"
           alt="ZenBox AI email filtering visualization"
-          src="/figmaAssets/layer-2.png"
+          src="/figmaAssets/Layer 2.png"
         />
       </div>
     </section>

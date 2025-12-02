@@ -36,7 +36,7 @@ export const HeroBannerSection = (): JSX.Element => {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 translate-x-[142px] w-[696px] h-[696px] bg-[#1d71c5] rounded-[347.85px/347.79px] blur-[250px]" />
 
         <img
-          className="absolute w-full h-[94.53%] top-[5.47%] left-0"
+          className="absolute w-auto h-auto max-w-full max-h-[95%] top-[5.47%] left-1/2 -translate-x-1/2"
           alt="Letter"
           src="/figmaAssets/letter.png"
         />

@@ -78,7 +78,7 @@ export const OverviewSection = (): JSX.Element => {
               className={`w-full h-[230px] ${feature.background} bg-[100%_100%] border-0`}
             >
               <CardContent className="flex flex-col items-center justify-between h-full p-0">
-                <div className="flex w-full items-center justify-start pt-[22px] pl-0">
+                <div className="flex w-full items-center justify-start pt-[22px] pl-[50px]">
                   <img
                     className="w-auto h-6 max-w-[22.36px]"
                     alt={feature.title}
@@ -107,7 +107,7 @@ export const OverviewSection = (): JSX.Element => {
               className={`w-full h-[230px] ${feature.background} bg-[100%_100%] border-0`}
             >
               <CardContent className="flex flex-col items-center justify-between h-full p-0">
-                <div className="flex w-full items-center justify-start pt-[22px] pl-0">
+                <div className="flex w-full items-center justify-start pt-[22px] pl-[50px]">
                   <img
                     className="w-auto h-6 max-w-[22.36px]"
                     alt={feature.title}

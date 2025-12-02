@@ -67,9 +67,10 @@ export const SecurityFeaturesSection = (): JSX.Element => {
           </div>
 
           <img
-            className="relative w-[1240.99px] h-[1390.15px] mt-[-461.27px] mb-[-446.88px] ml-[-20.99px] mr-[-220.00px]"
+            // Đổi 'm-auto' thành 'ml-auto'
+            className="relative w-full max-w-[665px] object-contain"
             alt="Security visualization"
-            src="/figmaAssets/group.png"
+            src="/figmaAssets/object.png"
           />
         </div>
       </div>
