@@ -15,25 +15,25 @@ export const Siftly = (): JSX.Element => {
   return (
     <div className="bg-[#001429] w-full min-h-screen relative overflow-x-hidden">
       <img
-        className="absolute top-[1555px] left-0 w-[490px] h-[798px] pointer-events-none"
+        className="absolute top-[1660px] left-0 w-[490px] h-[798px] pointer-events-none"
         alt="Decor"
         src="/figmaAssets/decor.png"
       />
 
       <img
-        className="absolute top-[3996px] left-[951px] w-[489px] h-[798px] pointer-events-none"
+        className="absolute top-[4080px] right-[0] w-[489px] h-[798px] pointer-events-none"
         alt="Decor"
         src="/figmaAssets/decor-1.png"
       />
 
-      <img
+      {/* <img
         className="absolute top-[5978px] left-0 w-full max-w-[1440px] h-[503px] pointer-events-none"
         alt="Decor"
         src="/figmaAssets/decor-2.png"
-      />
+      /> */}
 
       <img
-        className="absolute top-[69.65%] left-1/2 -translate-x-1/2 w-full max-w-[1440px] h-auto pointer-events-none"
+        className="absolute top-[70%] left-1/2 -translate-x-1/2 w-full max-w-[1440px] h-auto pointer-events-none"
         alt="Map"
         src="/figmaAssets/map.png"
       />
@@ -51,9 +51,8 @@ export const Siftly = (): JSX.Element => {
           <Button
             variant="ghost"
             size="sm"
-            className={`h-auto px-0 py-0 [font-family:'Montserrat',Helvetica] font-bold text-sm tracking-[0] leading-[normal] hover:bg-transparent ${
-              selectedLanguage === "EN" ? "text-[#33fff9]" : "text-[#f2f2f2]"
-            }`}
+            className={`h-auto px-0 py-0 [font-family:'Montserrat',Helvetica] font-bold text-sm tracking-[0] leading-[normal] hover:bg-transparent ${selectedLanguage === "EN" ? "text-[#33fff9]" : "text-[#f2f2f2]"
+              }`}
             onClick={() => setSelectedLanguage("EN")}
           >
             EN
@@ -64,9 +63,8 @@ export const Siftly = (): JSX.Element => {
           <Button
             variant="ghost"
             size="sm"
-            className={`h-auto px-0 py-0 [font-family:'Montserrat',Helvetica] font-bold text-sm tracking-[0] leading-[normal] hover:bg-transparent ${
-              selectedLanguage === "VI" ? "text-[#33fff9]" : "text-[#f2f2f2]"
-            }`}
+            className={`h-auto px-0 py-0 [font-family:'Montserrat',Helvetica] font-bold text-sm tracking-[0] leading-[normal] hover:bg-transparent ${selectedLanguage === "VI" ? "text-[#33fff9]" : "text-[#f2f2f2]"
+              }`}
             onClick={() => setSelectedLanguage("VI")}
           >
             VI
@@ -76,6 +74,13 @@ export const Siftly = (): JSX.Element => {
 
       <main className="relative w-full">
         <HeroBannerSection />
+        <div className="flex w-full justify-center py-10">
+          <img
+            src="/figmaAssets/s.png"
+            alt="Siftly Logo"
+            className="w-[700px] h-auto object-contain mt-40 mb-32"
+          />
+        </div>
         <OverviewSection />
         <EasySetupSection />
         <AnalyticsSection />
