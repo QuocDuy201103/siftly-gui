@@ -62,37 +62,37 @@ const features = [
 
 export const FeaturesSection = (): JSX.Element => {
   return (
-    <section className="relative inline-flex flex-col items-center gap-[68px] w-full pt-20 pb-32 overflow-hidden">
+    <section className="relative inline-flex flex-col items-center gap-8 md:gap-12 lg:gap-[68px] w-full pt-12 md:pt-16 lg:pt-20 pb-16 md:pb-24 lg:pb-32 overflow-hidden px-4">
       <img
-        className="absolute bottom-0 left-0 w-auto h-[400px] pointer-events-none opacity-60 mix-blend-screen"
+        className="absolute bottom-0 left-0 w-auto h-[200px] md:h-[300px] lg:h-[400px] pointer-events-none opacity-60 mix-blend-screen"
         alt="Decor"
         src="/figmaAssets/decor-2.png"
       />
-      <div className="relative z-10 inline-flex flex-col items-center gap-10 flex-[0_0_auto]">
-        <div className="flex flex-col items-center gap-5 w-full flex-[0_0_auto]">
+      <div className="relative z-10 inline-flex flex-col items-center gap-6 md:gap-8 lg:gap-10 flex-[0_0_auto] w-full">
+        <div className="flex flex-col items-center gap-4 md:gap-5 w-full flex-[0_0_auto]">
           <div className="inline-flex flex-col items-center justify-center flex-[0_0_auto]">
-            <h2 className="w-fit mt-[-1.00px] bg-[linear-gradient(90deg,rgba(51,255,249,1)_0%,rgba(39,180,222,1)_25%,rgba(22,69,181,1)_100%)] [-webkit-background-clip:text] bg-clip-text [-webkit-text-fill-color:transparent] [text-fill-color:transparent] [font-family:'Montserrat',Helvetica] font-bold text-transparent text-[32px] tracking-[0] leading-[normal]">
+            <h2 className="w-fit mt-[-1.00px] bg-[linear-gradient(90deg,rgba(51,255,249,1)_0%,rgba(39,180,222,1)_25%,rgba(22,69,181,1)_100%)] [-webkit-background-clip:text] bg-clip-text [-webkit-text-fill-color:transparent] [text-fill-color:transparent] [font-family:'Montserrat',Helvetica] font-bold text-transparent text-2xl md:text-3xl lg:text-[32px] tracking-[0] leading-[normal] text-center">
               TRANSFORM YOUR EMAIL
             </h2>
 
-            <h2 className="w-fit [font-family:'Montserrat',Helvetica] font-bold text-white text-[32px] tracking-[0] leading-[normal]">
+            <h2 className="w-fit [font-family:'Montserrat',Helvetica] font-bold text-white text-2xl md:text-3xl lg:text-[32px] tracking-[0] leading-[normal] text-center">
               EXPERIENCE TODAY
             </h2>
           </div>
 
-          <p className="w-[534px] font-content-13 font-[number:var(--content-13-font-weight)] text-[#b2b8bf] text-[length:var(--content-13-font-size)] text-center tracking-[var(--content-13-letter-spacing)] leading-[var(--content-13-line-height)] [font-style:var(--content-13-font-style)]">
+          <p className="w-full max-w-[534px] px-4 md:px-0 font-content-13 font-[number:var(--content-13-font-weight)] text-[#b2b8bf] text-[length:var(--content-13-font-size)] text-center tracking-[var(--content-13-letter-spacing)] leading-[var(--content-13-line-height)] [font-style:var(--content-13-font-style)]">
             Join thousands of users who have revolutionized their email
             management with Siftly&apos;s AI-powered filtering
           </p>
         </div>
 
-        <div className="inline-flex flex-col items-center justify-center gap-6 flex-[0_0_auto]">
-          <div className="inline-flex items-center gap-5 flex-[0_0_auto]">
-            <div className="inline-flex items-center gap-7 flex-[0_0_auto]">
+        <div className="inline-flex flex-col items-center justify-center gap-4 md:gap-6 flex-[0_0_auto] w-full">
+          <div className="inline-flex items-center gap-3 md:gap-5 flex-[0_0_auto] flex-col md:flex-row">
+            <div className="inline-flex items-center gap-4 md:gap-7 flex-[0_0_auto] flex-col md:flex-row">
               {appStoreButtons.map((button, index) => (
                 <Button
                   key={index}
-                  className="flex w-40 h-10 justify-center gap-2 bg-black rounded-[100px] border border-solid items-center hover:bg-black/90"
+                  className="w-full md:w-40 h-12 flex justify-center gap-2 bg-black rounded-[100px] border border-white/10 items-center transition-all duration-300 hover:scale-105 hover:bg-gray"
                 >
                   <img
                     className={`${button.iconWidth} ${button.iconHeight}`}
@@ -130,18 +130,18 @@ export const FeaturesSection = (): JSX.Element => {
 
           <a
             href="#"
-            className="w-fit [font-family:'Montserrat',Helvetica] font-bold text-[#33fef9] text-[13px] tracking-[0] leading-5 underline whitespace-nowrap hover:text-[#33fef9]/80"
+            className="w-fit p-3 [font-family:'Montserrat',Helvetica] font-bold text-[#33fef9] text-[13px] tracking-[0] leading-5 underline whitespace-nowrap transform transition-all duration-[400ms] ease-in-out scale-95 hover:scale-105 hover:text-[#33fef9]/80 hover:border-white/30 hover:bg-white"
           >
             View Privacy Policy
           </a>
         </div>
       </div>
 
-      <div className="inline-flex items-start gap-6 flex-[0_0_auto]">
+      <div className="inline-flex items-start gap-4 md:gap-5 lg:gap-6 flex-[0_0_auto] flex-col md:flex-row px-4">
         {features.map((feature, index) => (
           <div
             key={index}
-            className="flex w-[200px] items-center justify-center gap-3"
+            className="flex w-full md:w-auto md:min-w-[180px] lg:w-[200px] items-center justify-center gap-3"
           >
             <img
               className={feature.iconClass}
