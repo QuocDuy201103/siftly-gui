@@ -1,9 +1,17 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
+import passport from "passport";
+import { sessionConfig } from "./auth";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Session and Passport middleware (must be before routes)
+app.use(sessionConfig);
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

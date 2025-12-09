@@ -141,7 +141,7 @@ mongodb://localhost:27017/siftly
    e:\AMY_Technology_LLC\1-siftly\.env
    ```
 
-2. **Thêm DATABASE_URL vào file:**
+2. **Thêm DATABASE_URL và SLACK_WEBHOOK_URL vào file:**
    
    **Nếu dùng MongoDB Atlas:**
    ```
@@ -152,6 +152,11 @@ mongodb://localhost:27017/siftly
    ```
    DATABASE_URL=mongodb://localhost:27017/siftly
    ```
+   
+   **Slack Webhook URL (optional):**
+   ```
+   SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+   ```
 
 3. **Lưu file**
 
@@ -161,7 +166,8 @@ mongodb://localhost:27017/siftly
 ```powershell
 $env:DATABASE_URL="mongodb://localhost:27017/siftly"
 # hoặc
-$env:DATABASE_URL=
+$env:DATABASE_URL="mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/siftly?retryWrites=true&w=majority"
+$env:SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
 ```
 
 #### Windows (CMD):
@@ -419,6 +425,108 @@ npm install mongoose @types/mongoose
 - [ ] Log hiển thị "MongoDB connected successfully"
 - [ ] Test submit form Contact Us thành công
 - [ ] Collections đã được tạo trong database
+
+---
+
+## Setup Slack Webhook (Optional)
+
+Để nhận thông báo khi có form contact mới, bạn cần setup Slack Webhook:
+
+### Bước 1: Tạo Slack App
+
+1. Truy cập: https://api.slack.com/apps
+2. Click **"Create New App"** → **"From scratch"**
+3. Đặt tên app (ví dụ: "Siftly Contact Notifications")
+4. Chọn workspace của bạn
+5. Click **"Create App"**
+
+### Bước 2: Tạo Incoming Webhook
+
+1. Trong app settings, vào **"Incoming Webhooks"** (bên trái)
+2. Bật **"Activate Incoming Webhooks"**
+3. Click **"Add New Webhook to Workspace"**
+4. Chọn channel bạn muốn nhận thông báo
+5. Click **"Allow"**
+6. Copy **Webhook URL** (có dạng: `https://hooks.slack.com/services/...`)
+
+### Bước 3: Thêm vào .env
+
+Thêm vào file `.env`:
+```
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+```
+
+### Bước 4: Test
+
+Sau khi setup, mỗi khi có form contact mới:
+- Dữ liệu sẽ được lưu vào database
+- Thông báo sẽ được gửi đến Slack channel đã chọn
+
+**Lưu ý:** Nếu không set `SLACK_WEBHOOK_URL`, ứng dụng vẫn hoạt động bình thường, chỉ không gửi thông báo Slack.
+
+---
+
+## Setup Google OAuth cho Admin Login
+
+Để bảo vệ trang admin, bạn cần setup Google OAuth:
+
+### Bước 1: Tạo Google OAuth Credentials
+
+1. Truy cập [Google Cloud Console](https://console.cloud.google.com/)
+2. Tạo project mới hoặc chọn project hiện có
+3. Vào **APIs & Services** → **Credentials**
+4. Click **Create Credentials** → **OAuth client ID**
+5. Nếu chưa có OAuth consent screen:
+   - Vào **OAuth consent screen**
+   - Chọn **External** → **Create**
+   - Điền thông tin cơ bản (App name, User support email, Developer contact)
+   - Click **Save and Continue**
+   - Thêm scopes: `email`, `profile`
+   - Thêm test users (nếu cần)
+   - Click **Save and Continue**
+6. Tạo OAuth Client ID:
+   - Application type: **Web application**
+   - Name: `Siftly Admin`
+   - Authorized JavaScript origins:
+     - `http://localhost:5000` (development)
+     - `https://yourdomain.com` (production)
+   - Authorized redirect URIs:
+     - `http://localhost:5000/api/auth/google/callback` (development)
+     - `https://yourdomain.com/api/auth/google/callback` (production)
+   - Click **Create**
+7. Copy **Client ID** và **Client Secret**
+
+### Bước 2: Thêm vào file .env
+
+Thêm các biến sau vào file `.env`:
+
+```
+# Google OAuth
+GOOGLE_CLIENT_ID=your_client_id_here
+GOOGLE_CLIENT_SECRET=your_client_secret_here
+GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
+
+# Session Secret (tạo random string)
+SESSION_SECRET=your-random-session-secret-key-here
+
+# Allowed Admin Emails (optional, comma-separated)
+# Nếu không set, tất cả Google accounts đều có thể login
+ALLOWED_ADMIN_EMAILS=admin@example.com,another@example.com
+```
+
+### Bước 3: Test Login
+
+1. Restart server: `npm run dev`
+2. Truy cập: `http://localhost:5000/admin/login`
+3. Click **Sign in with Google**
+4. Chọn Google account và authorize
+5. Sau khi login thành công, bạn sẽ được redirect đến `/admin/contacts`
+
+### Lưu ý:
+
+- **ALLOWED_ADMIN_EMAILS**: Nếu set, chỉ những email này mới có thể login. Nếu không set, tất cả Google accounts đều có thể login.
+- **SESSION_SECRET**: Nên dùng random string mạnh trong production. Có thể generate bằng: `openssl rand -base64 32`
+- **GOOGLE_CALLBACK_URL**: Phải khớp với redirect URI đã set trong Google Cloud Console
 
 ---
 
