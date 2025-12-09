@@ -132,24 +132,35 @@ export const Siftly = (): JSX.Element => {
       <button
         type="button"
         onClick={() => setIsContactOpen(true)}
-        className="fixed bottom-6 right-6 z-50 rounded-full bg-[#33fff9] px-5 py-3 text-sm font-bold text-[#001429] shadow-lg shadow-[#33fff9]/40 transition-transform duration-300 ease-in-out hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#33fff9]"
+        className={`fixed bottom-6 right-6 z-50 transition-all duration-100 ease-in-out hover:scale-105 outline-none active:outline-none focus:outline-none ${
+          isContactOpen ? "opacity-0 pointer-events-none" : "opacity-100"
+        }`}
+        aria-label="Contact Us"
       >
-        Contact Us
+        <img
+          src="/figmaAssets/contact.png"
+          alt="Contact Us"
+          className="w-14 h-14 md:w-16 md:h-16 object-contain"
+        />
       </button>
 
       {/* Contact modal */}
       {isContactOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-lg rounded-2xl bg-[#0c1b2e] p-6 shadow-2xl border border-white/10">
+          <div className="w-full max-w-2xl rounded-3xl bg-gradient-to-b from-[#31F2F4] to-[#1B67C1] p-6 shadow-xl">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-white">Contact Us</h3>
+              <h3 className="text-3xl font-bold text-black">Contact Us</h3>
               <button
                 type="button"
                 onClick={() => setIsContactOpen(false)}
-                className="text-[#b2b8bf] hover:text-white transition-colors duration-200"
+                className="border-none bg-transparent hover:opacity-80 transition-opacity duration-200"
                 aria-label="Close contact form"
               >
-                ✕
+                <img
+                  src="/figmaAssets/Union.png"
+                  alt="Close"
+                  className="w-3 h-3 object-contain"
+                />
               </button>
             </div>
 
@@ -161,69 +172,65 @@ export const Siftly = (): JSX.Element => {
               }}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col space-y-2">
-                  <label className="text-sm text-[#b2b8bf]" htmlFor="firstName">
-                    First name
-                  </label>
+                <div className="flex flex-col">
                   <input
-                    id="firstName"
-                    name="firstName"
-                    className="w-full rounded-lg border border-white/10 bg-[#0a1626] px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#33fff9]"
+                    id="fullName"
+                    name="fullName"
+                    className="w-full rounded-lg bg-white px-3 py-3 text-gray-800 placeholder-gray-500 focus:outline-none"
+                    placeholder="Full Name"
                     required
                   />
                 </div>
-                <div className="flex flex-col space-y-2">
-                  <label className="text-sm text-[#b2b8bf]" htmlFor="lastName">
-                    Last name
-                  </label>
+                <div className="flex flex-col">
                   <input
-                    id="lastName"
-                    name="lastName"
-                    className="w-full rounded-lg border border-white/10 bg-[#0a1626] px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#33fff9]"
+                    id="email"
+                    name="email"
+                    type="email"
+                    className="w-full rounded-lg bg-white px-3 py-3 text-gray-800 placeholder-gray-500 focus:outline-none"
+                    placeholder="Email"
                     required
                   />
                 </div>
               </div>
 
-              <div className="flex flex-col space-y-2">
-                <label className="text-sm text-[#b2b8bf]" htmlFor="email">
-                  Email
-                </label>
+              <div className="flex flex-col">
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  className="w-full rounded-lg border border-white/10 bg-[#0a1626] px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#33fff9]"
-                  required
+                  id="company"
+                  name="company"
+                  className="w-full rounded-lg bg-white px-3 py-3 text-gray-800 placeholder-gray-500 focus:outline-none"
+                  placeholder="Company"
                 />
               </div>
 
-              <div className="flex flex-col space-y-2">
-                <label className="text-sm text-[#b2b8bf]" htmlFor="message">
-                  Message
-                </label>
+              <div className="flex flex-col">
                 <textarea
                   id="message"
                   name="message"
-                  rows={4}
-                  className="w-full rounded-lg border border-white/10 bg-[#0a1626] px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#33fff9]"
+                  rows={5}
+                  className="w-full rounded-lg bg-white px-3 py-3 text-gray-800 placeholder-gray-500 focus:outline-none"
+                  placeholder="Tell us about your project..."
                   required
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsContactOpen(false)}
-                  className="px-4 py-2 rounded-lg text-sm font-semibold text-[#b2b8bf] hover:text-white transition-colors duration-200"
-                >
-                  Cancel
-                </button>
+              <div className="flex items-center gap-3 pt-1">
+                <input
+                  id="newsletter"
+                  name="newsletter"
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-[#33fff9] bg-white text-[#33fff9] focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                />
+                <label htmlFor="newsletter" className="text-sm text-black">
+                  Subscribe to our newsletter for AI & Digital Transformation updates
+                </label>
+              </div>
+
+              <div className="flex items-center justify-center pt-2">
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-[#33fff9] text-[#001429] text-sm font-bold hover:scale-[1.02] transition-transform duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#33fff9]"
+                  className="w-full py-3 rounded-3xl bg-black text-white text-base font-bold hover:scale-[1.01] transition-transform duration-200 focus:outline-none focus:ring-0 focus:ring-offset-0"
                 >
-                  Send
+                  SEND
                 </button>
               </div>
             </form>
