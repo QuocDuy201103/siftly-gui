@@ -161,7 +161,7 @@ mongodb://localhost:27017/siftly
 ```powershell
 $env:DATABASE_URL="mongodb://localhost:27017/siftly"
 # hoặc
-$env:DATABASE_URL="mongodb+srv://siftly_admin:<db_password>@cluster0.repfqbv.mongodb.net/?appName=Cluster0"
+$env:DATABASE_URL=
 ```
 
 #### Windows (CMD):
