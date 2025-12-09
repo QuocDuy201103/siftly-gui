@@ -171,10 +171,11 @@ export const Siftly = (): JSX.Element => {
               className="space-y-4"
               onSubmit={async (e) => {
                 e.preventDefault();
+                const form = e.currentTarget;
                 setIsSubmitting(true);
                 setSubmitError(null);
 
-                const formData = new FormData(e.currentTarget);
+                const formData = new FormData(form);
                 const data = {
                   fullName: formData.get("fullName") as string,
                   email: formData.get("email") as string,
@@ -185,9 +186,9 @@ export const Siftly = (): JSX.Element => {
 
                 try {
                   await apiRequest("POST", "/api/contact", data);
-                  setIsContactOpen(false);
                   // Reset form
-                  e.currentTarget.reset();
+                  form.reset();
+                  setIsContactOpen(false);
                 } catch (error) {
                   setSubmitError(
                     error instanceof Error

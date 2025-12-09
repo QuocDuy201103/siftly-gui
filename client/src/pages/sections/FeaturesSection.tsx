@@ -130,7 +130,7 @@ export const FeaturesSection = (): JSX.Element => {
 
           <a
             href="#"
-            className="w-fit p-3 [font-family:'Montserrat',Helvetica] font-bold text-[#33fef9] text-[13px] tracking-[0] leading-5 underline whitespace-nowrap transform transition-all duration-[400ms] ease-in-out scale-95 hover:scale-105 hover:text-[#33fef9]/80 hover:border-white/30 hover:bg-white"
+            className="w-fit p-3 [font-family:'Montserrat',Helvetica] font-bold text-[#33fef9] text-[13px] tracking-[0] leading-5 underline whitespace-nowrap transform transition-all duration-400ms ease-in-out scale-95 hover:scale-105 hover:text-[#33fef9]/80 hover:border-white/30 hover:bg-white"
           >
             View Privacy Policy
           </a>
