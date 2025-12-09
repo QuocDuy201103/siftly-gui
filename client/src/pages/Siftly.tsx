@@ -6,6 +6,7 @@ import { FeaturesSection } from "./sections/FeaturesSection";
 import { HeroBannerSection } from "./sections/HeroBannerSection";
 import { OverviewSection } from "./sections/OverviewSection";
 import { SecurityFeaturesSection } from "./sections/SecurityFeaturesSection";
+import { apiRequest } from "@/lib/queryClient";
 
 export const Siftly = (): JSX.Element => {
   const [selectedLanguage, setSelectedLanguage] = React.useState<"EN" | "VI">(
@@ -13,6 +14,8 @@ export const Siftly = (): JSX.Element => {
   );
   const [isHeaderVisible, setIsHeaderVisible] = React.useState(true);
   const [isContactOpen, setIsContactOpen] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
   const lastScrollY = React.useRef(0);
   const ticking = React.useRef(false);
 
@@ -166,9 +169,34 @@ export const Siftly = (): JSX.Element => {
 
             <form
               className="space-y-4"
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
-                setIsContactOpen(false);
+                setIsSubmitting(true);
+                setSubmitError(null);
+
+                const formData = new FormData(e.currentTarget);
+                const data = {
+                  fullName: formData.get("fullName") as string,
+                  email: formData.get("email") as string,
+                  company: formData.get("company") as string || undefined,
+                  message: formData.get("message") as string,
+                  newsletter: formData.get("newsletter") === "on",
+                };
+
+                try {
+                  await apiRequest("POST", "/api/contact", data);
+                  setIsContactOpen(false);
+                  // Reset form
+                  e.currentTarget.reset();
+                } catch (error) {
+                  setSubmitError(
+                    error instanceof Error
+                      ? error.message
+                      : "Failed to submit form. Please try again.",
+                  );
+                } finally {
+                  setIsSubmitting(false);
+                }
               }}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -225,12 +253,19 @@ export const Siftly = (): JSX.Element => {
                 </label>
               </div>
 
+              {submitError && (
+                <div className="text-red-500 text-sm text-center">
+                  {submitError}
+                </div>
+              )}
+
               <div className="flex items-center justify-center pt-2">
                 <button
                   type="submit"
-                  className="w-full py-3 rounded-3xl bg-black text-white text-base font-bold hover:scale-[1.01] transition-transform duration-200 focus:outline-none focus:ring-0 focus:ring-offset-0"
+                  disabled={isSubmitting}
+                  className="w-full py-3 rounded-3xl bg-black text-white text-base font-bold hover:scale-[1.01] transition-transform duration-200 focus:outline-none focus:ring-0 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  SEND
+                  {isSubmitting ? "SENDING..." : "SEND"}
                 </button>
               </div>
             </form>
