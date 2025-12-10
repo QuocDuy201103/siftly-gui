@@ -1,4 +1,3 @@
-import type { Request, Response } from "express";
 import express, { type Express } from "express";
 import passport from "passport";
 import { sessionConfig } from "../server/auth";
@@ -8,10 +7,8 @@ import { serveStatic } from "../server/vite";
 let app: Express | null = null;
 
 // Vercel serverless function handler
-export default async function handler(
-  req: Request,
-  res: Response
-): Promise<void> {
+// Using any types for Vercel Request/Response compatibility
+export default async function handler(req: any, res: any): Promise<void> {
   // Initialize app on first request
   if (!app) {
     app = express();
