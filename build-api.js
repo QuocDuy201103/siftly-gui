@@ -5,6 +5,19 @@ import { mkdir } from 'fs/promises';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// Simple plugin to resolve @shared alias
+const aliasPlugin = {
+  name: 'alias',
+  setup(build) {
+    // Resolve @shared/* to shared/*
+    build.onResolve({ filter: /^@shared\// }, (args) => {
+      return {
+        path: resolve(__dirname, 'shared', args.path.replace('@shared/', '')),
+      };
+    });
+  },
+};
+
 // Ensure output directory exists
 await mkdir(resolve(__dirname, '.vercel/output/functions/api'), { recursive: true });
 
@@ -16,7 +29,7 @@ await build({
   outfile: resolve(__dirname, '.vercel/output/functions/api/index.js'),
   packages: 'external',
   external: ['express', 'passport', 'mongoose', 'dotenv', 'express-session', 'passport-google-oauth20'],
-  alias: {
-    '../server': resolve(__dirname, 'server'),
-  },
+  plugins: [aliasPlugin],
+  resolveExtensions: ['.ts', '.js', '.json'],
+  absWorkingDir: __dirname,
 });
