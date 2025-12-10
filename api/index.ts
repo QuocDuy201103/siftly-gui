@@ -2,7 +2,6 @@ import express, { type Express } from "express";
 import passport from "passport";
 import { sessionConfig } from "../server/auth";
 import { registerRoutes } from "../server/routes";
-import { serveStatic } from "../server/vite";
 
 let app: Express | null = null;
 
@@ -29,11 +28,10 @@ export default async function handler(req: any, res: any): Promise<void> {
       console.error("Failed to connect to database:", error);
     }
 
-    // Register routes
+    // Register routes (only API routes, no static file serving)
+    // Vercel will handle static files from outputDirectory
+    // Ignore Server return value - not needed in serverless environment
     await registerRoutes(app);
-
-    // Serve static files in production
-    serveStatic(app);
   }
 
   // Handle request
