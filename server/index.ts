@@ -46,7 +46,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Connect to MongoDB
+  // Connect to Supabase PostgreSQL
   try {
     const { connectDb } = await import("./db");
     await connectDb();

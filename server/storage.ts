@@ -1,5 +1,6 @@
-import { type User, type InsertUser, type Contact, type InsertContact, User as UserModel, Contact as ContactModel } from "@shared/schema";
-import { connectDb } from "./db";
+import { eq, desc } from "drizzle-orm";
+import { type User, type InsertUser, type Contact, type InsertContact, users, contacts } from "@shared/schema";
+import { connectDb, getDb } from "./db";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -15,41 +16,39 @@ export interface IStorage {
 
 export class DbStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
-    await connectDb();
-    const user = await UserModel.findById(id);
-    if (!user) return undefined;
-    return user.toObject() as User;
+    const db = await connectDb();
+    const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    await connectDb();
-    const user = await UserModel.findOne({ username });
-    if (!user) return undefined;
-    return user.toObject() as User;
+    const db = await connectDb();
+    const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    await connectDb();
-    const user = await UserModel.create(insertUser);
-    return user.toObject() as User;
+    const db = await connectDb();
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
   }
 
   async createContact(insertContact: InsertContact): Promise<Contact> {
-    await connectDb();
-    const contact = await ContactModel.create(insertContact);
-    return contact.toObject() as Contact;
+    const db = await connectDb();
+    const [contact] = await db.insert(contacts).values(insertContact).returning();
+    return contact;
   }
 
   async getAllContacts(): Promise<Contact[]> {
-    await connectDb();
-    const contacts = await ContactModel.find().sort({ createdAt: -1 });
-    return contacts.map(contact => contact.toObject() as Contact);
+    const db = await connectDb();
+    const allContacts = await db.select().from(contacts).orderBy(desc(contacts.createdAt));
+    return allContacts;
   }
 
   async deleteContact(id: string): Promise<boolean> {
-    await connectDb();
-    const result = await ContactModel.findByIdAndDelete(id);
-    return !!result;
+    const db = await connectDb();
+    const [deleted] = await db.delete(contacts).where(eq(contacts.id, id)).returning();
+    return !!deleted;
   }
 }
 

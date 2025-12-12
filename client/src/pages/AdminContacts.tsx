@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
 
 interface Contact {
-  _id: string;
+  id: string;
   fullName: string;
   email: string;
   company?: string;
@@ -344,7 +344,7 @@ export const AdminContacts = (): JSX.Element => {
                 </TableHeader>
                 <TableBody>
                   {contacts.map((contact) => (
-                    <TableRow key={contact._id} className="hover:bg-gray-50">
+                    <TableRow key={contact.id} className="hover:bg-gray-50">
                       <TableCell className="font-medium">{contact.fullName}</TableCell>
                       <TableCell className="text-gray-600">{contact.email}</TableCell>
                       <TableCell className="text-gray-600 max-w-xs">
@@ -368,7 +368,7 @@ export const AdminContacts = (): JSX.Element => {
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleDelete(contact._id, contact.fullName)}
+                          onClick={() => handleDelete(contact.id, contact.fullName)}
                           disabled={deleteMutation.isPending}
                         >
                           Delete

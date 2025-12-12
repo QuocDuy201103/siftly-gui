@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import { pgTable, text, boolean, timestamp, uuid } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 // Zod schemas for validation
@@ -18,44 +18,28 @@ export const insertContactSchema = z.object({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertContact = z.infer<typeof insertContactSchema>;
 
-// MongoDB Schemas with Mongoose
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-}, {
-  timestamps: true,
+// Drizzle PostgreSQL Schemas
+export const users = pgTable("users", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-const contactSchema = new mongoose.Schema({
-  fullName: { type: String, required: true },
-  email: { type: String, required: true },
-  company: { type: String, required: false },
-  message: { type: String, required: true },
-  newsletter: { type: Boolean, required: true, default: false },
-}, {
-  timestamps: true,
+export const contacts = pgTable("contacts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  fullName: text("full_name").notNull(),
+  email: text("email").notNull(),
+  company: text("company"),
+  message: text("message").notNull(),
+  newsletter: boolean("newsletter").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Models
-export const User = mongoose.models.User || mongoose.model("User", userSchema);
-export const Contact = mongoose.models.Contact || mongoose.model("Contact", contactSchema);
-
-// Types
-export interface User {
-  _id: string;
-  username: string;
-  password: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface Contact {
-  _id: string;
-  fullName: string;
-  email: string;
-  company?: string;
-  message: string;
-  newsletter: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+// Types inferred from Drizzle schemas
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+export type Contact = typeof contacts.$inferSelect;
+export type NewContact = typeof contacts.$inferInsert;

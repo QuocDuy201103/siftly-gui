@@ -1,134 +1,38 @@
-# Hướng Dẫn Setup Database MongoDB Thủ Công
+# Hướng Dẫn Setup Database Supabase
 
-Hướng dẫn chi tiết từng bước để setup MongoDB database cho dự án này.
+Hướng dẫn chi tiết từng bước để setup Supabase PostgreSQL database cho dự án này.
 
-## Bước 1: Cài đặt MongoDB
+## Bước 1: Tạo Supabase Project
 
-### Option A: MongoDB Atlas (Cloud - Khuyến nghị cho Production)
+1. **Truy cập Supabase:**
+   - Vào: https://supabase.com/
+   - Click **"Start your project"** hoặc **"Sign in"** nếu đã có tài khoản
 
-1. **Truy cập MongoDB Atlas:**
-   - Vào: https://www.mongodb.com/cloud/atlas/register
-   - Đăng ký tài khoản (miễn phí)
+2. **Tạo Project mới:**
+   - Click **"New Project"**
+   - Chọn Organization (hoặc tạo mới)
+   - Điền thông tin:
+     - **Name**: `siftly` (hoặc tên bạn muốn)
+     - **Database Password**: Tạo password mạnh (lưu lại để dùng sau)
+     - **Region**: Chọn region gần bạn nhất
+     - **Pricing Plan**: Chọn **Free** (hoặc Pro nếu cần)
+   - Click **"Create new project"**
+   - Đợi 2-3 phút để project được setup
 
-2. **Tạo Cluster:**
-   - Click **"Build a Database"**
-   - Chọn **FREE (M0)** tier
-   - Chọn Cloud Provider và Region (gần bạn nhất)
-   - Đặt tên cluster (ví dụ: `Cluster0`)
-   - Click **"Create"**
-   - Đợi 3-5 phút để cluster được tạo
-
-3. **Tạo Database User:**
-   - Vào tab **"Database Access"** (bên trái)
-   - Click **"Add New Database User"**
-   - Chọn **"Password"** authentication
-   - Nhập:
-     - Username: `siftly_user` (hoặc tên bạn muốn)
-     - Password: Tạo password mạnh (lưu lại để dùng sau)
-   - Database User Privileges: Chọn **"Read and write to any database"**
-   - Click **"Add User"**
-
-4. **Whitelist IP Address:**
-   - Vào tab **"Network Access"** (bên trái)
-   - Click **"Add IP Address"**
-   - Click **"Allow Access from Anywhere"** (hoặc thêm IP cụ thể)
-   - Click **"Confirm"**
-
-5. **Lấy Connection String:**
-   - Vào tab **"Database"** (bên trái)
-   - Click **"Connect"** trên cluster của bạn
-   - Chọn **"Connect your application"**
-   - Driver: **Node.js**, Version: **5.5 or later**
+3. **Lấy Connection String:**
+   - Vào **Project Settings** (icon bánh răng ở sidebar)
+   - Vào tab **Database**
+   - Tìm phần **Connection string**
+   - Chọn **URI** tab
    - Copy connection string, có dạng:
      ```
-     mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
+     postgresql://postgres:[YOUR-PASSWORD]@db.xxxxx.supabase.co:5432/postgres
      ```
-   - Thay `<username>` bằng username bạn đã tạo (ví dụ: `siftly_user`)
-   - Thay `<password>` bằng password bạn đã tạo
-   - Thêm tên database vào cuối: `?retryWrites=true&w=majority` → `?retryWrites=true&w=majority` (hoặc thêm `/siftly` trước `?`)
+   - Thay `[YOUR-PASSWORD]` bằng password bạn đã tạo khi tạo project
    - Kết quả cuối cùng:
      ```
-     mongodb+srv://siftly_user:your_password@cluster0.xxxxx.mongodb.net/siftly?retryWrites=true&w=majority
+     postgresql://postgres:your_password@db.xxxxx.supabase.co:5432/postgres
      ```
-
-### Option B: MongoDB Local (Development)
-
-#### Windows:
-
-1. **Download MongoDB:**
-   - Vào: https://www.mongodb.com/try/download/community
-   - Chọn:
-     - Version: Latest (7.0+)
-     - Platform: Windows
-     - Package: MSI
-   - Click **Download**
-
-2. **Cài đặt:**
-   - Chạy file `.msi` đã download
-   - Chọn **"Complete"** installation
-   - Chọn **"Install MongoDB as a Service"**
-   - Chọn **"Run service as Network Service user"**
-   - Click **"Install"**
-
-3. **Kiểm tra MongoDB đang chạy:**
-   - Mở Command Prompt
-   - Chạy: `mongod --version`
-   - Nếu thấy version, MongoDB đã được cài đặt
-
-4. **Connection String:**
-   ```
-   mongodb://localhost:27017/siftly
-   ```
-
-#### macOS:
-
-```bash
-# Cài đặt Homebrew (nếu chưa có)
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# Cài đặt MongoDB
-brew tap mongodb/brew
-brew install mongodb-community
-
-# Khởi động MongoDB
-brew services start mongodb-community
-
-# Kiểm tra
-mongod --version
-```
-
-**Connection String:**
-```
-mongodb://localhost:27017/siftly
-```
-
-#### Linux (Ubuntu/Debian):
-
-```bash
-# Import MongoDB public GPG key
-wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
-
-# Tạo list file
-echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-
-# Update package database
-sudo apt-get update
-
-# Cài đặt MongoDB
-sudo apt-get install -y mongodb-org
-
-# Khởi động MongoDB
-sudo systemctl start mongod
-sudo systemctl enable mongod
-
-# Kiểm tra
-mongod --version
-```
-
-**Connection String:**
-```
-mongodb://localhost:27017/siftly
-```
 
 ---
 
@@ -141,21 +45,23 @@ mongodb://localhost:27017/siftly
    e:\AMY_Technology_LLC\1-siftly\.env
    ```
 
-2. **Thêm DATABASE_URL và SLACK_WEBHOOK_URL vào file:**
+2. **Thêm DATABASE_URL và các biến khác vào file:**
+   ```
+   DATABASE_URL=postgresql://postgres:your_password@db.xxxxx.supabase.co:5432/postgres
    
-   **Nếu dùng MongoDB Atlas:**
-   ```
-   DATABASE_URL=mongodb+srv://siftly_user:your_password@cluster0.xxxxx.mongodb.net/siftly?retryWrites=true&w=majority
-   ```
-   
-   **Nếu dùng MongoDB Local:**
-   ```
-   DATABASE_URL=mongodb://localhost:27017/siftly
-   ```
-   
-   **Slack Webhook URL (optional):**
-   ```
+   # Slack Webhook URL (optional)
    SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+   
+   # Google OAuth (cho Admin Login)
+   GOOGLE_CLIENT_ID=your_client_id_here
+   GOOGLE_CLIENT_SECRET=your_client_secret_here
+   GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
+   
+   # Session Secret (tạo random string)
+   SESSION_SECRET=your-random-session-secret-key-here
+   
+   # Allowed Admin Emails (optional, comma-separated)
+   ALLOWED_ADMIN_EMAILS=admin@example.com
    ```
 
 3. **Lưu file**
@@ -164,32 +70,19 @@ mongodb://localhost:27017/siftly
 
 #### Windows (PowerShell):
 ```powershell
-$env:DATABASE_URL="mongodb://localhost:27017/siftly"
-# hoặc
-$env:DATABASE_URL="mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/siftly?retryWrites=true&w=majority"
+$env:DATABASE_URL="postgresql://postgres:your_password@db.xxxxx.supabase.co:5432/postgres"
 $env:SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
 ```
 
 #### Windows (CMD):
 ```cmd
-set DATABASE_URL=mongodb://localhost:27017/siftly
+set DATABASE_URL=postgresql://postgres:your_password@db.xxxxx.supabase.co:5432/postgres
 ```
 
 #### macOS/Linux:
 ```bash
-export DATABASE_URL="mongodb://localhost:27017/siftly"
-# hoặc
-export DATABASE_URL="mongodb+srv://siftly_user:your_password@cluster0.xxxxx.mongodb.net/siftly?retryWrites=true&w=majority"
+export DATABASE_URL="postgresql://postgres:your_password@db.xxxxx.supabase.co:5432/postgres"
 ```
-
-### Cách 3: Set trong Replit Secrets
-
-1. Vào Replit project
-2. Click icon **Secrets** (khóa) ở sidebar
-3. Click **"New Secret"**
-4. Key: `DATABASE_URL`
-5. Value: Connection string của bạn
-6. Click **"Add Secret"**
 
 ---
 
@@ -202,12 +95,28 @@ npm install
 ```
 
 Kiểm tra `package.json` có:
-- `mongoose`: ^8.0.0
-- `@types/mongoose`: ^5.11.97 (trong devDependencies)
+- `drizzle-orm`: ^0.39.1
+- `drizzle-kit`: ^0.31.4 (trong devDependencies)
+- `postgres`: ^3.4.5
 
 ---
 
-## Bước 4: Kiểm tra Kết nối
+## Bước 4: Tạo Database Schema
+
+Sau khi set DATABASE_URL, chạy lệnh để push schema lên database:
+
+```bash
+npm run db:push
+```
+
+Lệnh này sẽ:
+- Đọc schema từ `shared/schema.ts`
+- Tạo các bảng `users` và `contacts` trong Supabase
+- Tự động tạo migrations nếu cần
+
+---
+
+## Bước 5: Kiểm tra Kết nối
 
 1. **Chạy server:**
    ```bash
@@ -217,86 +126,33 @@ Kiểm tra `package.json` có:
 2. **Kiểm tra log:**
    - Nếu thành công, bạn sẽ thấy:
      ```
-     MongoDB connected successfully
+     Supabase PostgreSQL connected successfully
      serving on port 5000
      ```
    
    - Nếu có lỗi, kiểm tra:
      - DATABASE_URL đã được set đúng chưa
-     - MongoDB server đang chạy (nếu dùng local)
-     - Username/password đúng (nếu dùng Atlas)
-     - IP đã được whitelist (nếu dùng Atlas)
+     - Password trong connection string đúng chưa
+     - Project Supabase đang active
 
 ---
 
-## Bước 5: Test Database Connection
+## Bước 6: Verify Tables
 
-### Tạo file test (tùy chọn):
+Sau khi chạy `npm run db:push` và ứng dụng, các tables sẽ được tạo:
 
-Tạo file `test-db.js` trong root:
+1. **Kiểm tra bằng Supabase Dashboard:**
+   - Vào Supabase project
+   - Click **Table Editor** ở sidebar
+   - Bạn sẽ thấy 2 tables: `users` và `contacts`
 
-```javascript
-import mongoose from "mongoose";
-
-const DATABASE_URL = process.env.DATABASE_URL || "mongodb://localhost:27017/siftly";
-
-async function testConnection() {
-  try {
-    await mongoose.connect(DATABASE_URL);
-    console.log("✅ MongoDB connected successfully!");
-    
-    // List databases
-    const admin = mongoose.connection.db.admin();
-    const dbs = await admin.listDatabases();
-    console.log("📊 Available databases:", dbs.databases.map(db => db.name));
-    
-    await mongoose.disconnect();
-    console.log("✅ Disconnected from MongoDB");
-    process.exit(0);
-  } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
-    process.exit(1);
-  }
-}
-
-testConnection();
-```
-
-Chạy test:
-```bash
-node test-db.js
-```
-
----
-
-## Bước 6: Verify Collections
-
-Sau khi chạy ứng dụng và submit form Contact Us, các collections sẽ được tạo tự động:
-
-1. **Kiểm tra bằng MongoDB Compass** (GUI tool):
-   - Download: https://www.mongodb.com/try/download/compass
-   - Connect với connection string của bạn
-   - Xem collections: `users` và `contacts`
-
-2. **Kiểm tra bằng MongoDB Shell** (mongo/mongosh):
-   ```bash
-   # Kết nối
-   mongosh "mongodb://localhost:27017/siftly"
-   # hoặc
-   mongosh "mongodb+srv://siftly_user:password@cluster0.xxxxx.mongodb.net/siftly"
-   
-   # List databases
-   show dbs
-   
-   # Use database
-   use siftly
-   
-   # List collections
-   show collections
-   
-   # Xem documents trong collection contacts
-   db.contacts.find().pretty()
-   ```
+2. **Kiểm tra bằng SQL Editor:**
+   - Vào **SQL Editor** trong Supabase Dashboard
+   - Chạy query:
+     ```sql
+     SELECT * FROM users;
+     SELECT * FROM contacts;
+     ```
 
 ---
 
@@ -309,75 +165,71 @@ Sau khi chạy ứng dụng và submit form Contact Us, các collections sẽ đ
 **Giải pháp:**
 - Tạo file `.env` với DATABASE_URL
 - Hoặc set environment variable trong terminal
-- Hoặc thêm vào Replit Secrets
 
-### Lỗi: "MongoServerError: Authentication failed"
+### Lỗi: "password authentication failed"
 
-**Nguyên nhân:** Username hoặc password sai
-
-**Giải pháp:**
-- Kiểm tra lại username và password trong connection string
-- Đảm bảo đã thay `<username>` và `<password>` trong connection string
-- Tạo lại database user trong MongoDB Atlas nếu cần
-
-### Lỗi: "MongoNetworkError: connect ECONNREFUSED"
-
-**Nguyên nhân:** Không thể kết nối đến MongoDB server
+**Nguyên nhân:** Password trong connection string sai
 
 **Giải pháp:**
-- **Nếu dùng local:** Kiểm tra MongoDB service đang chạy
-  - Windows: Services → MongoDB
-  - macOS: `brew services list`
-  - Linux: `sudo systemctl status mongod`
-- **Nếu dùng Atlas:** Kiểm tra IP đã được whitelist trong Network Access
+- Kiểm tra lại password trong connection string
+- Lấy lại password từ Supabase Dashboard → Settings → Database
+- Hoặc reset password trong Supabase Dashboard
 
-### Lỗi: "MongoServerError: IP not whitelisted"
+### Lỗi: "Connection timeout" hoặc "ECONNREFUSED"
 
-**Nguyên nhân:** IP address chưa được whitelist trong MongoDB Atlas
+**Nguyên nhân:** Không thể kết nối đến Supabase server
 
 **Giải pháp:**
-- Vào MongoDB Atlas → Network Access
-- Click "Add IP Address"
-- Chọn "Allow Access from Anywhere" (0.0.0.0/0) hoặc thêm IP cụ thể
+- Kiểm tra internet connection
+- Kiểm tra Supabase project đang active (không bị pause)
+- Kiểm tra connection string đúng format
+- Kiểm tra firewall/network settings
 
-### Lỗi: "Cannot find module 'mongoose'"
+### Lỗi: "relation does not exist"
+
+**Nguyên nhân:** Tables chưa được tạo
+
+**Giải pháp:**
+```bash
+npm run db:push
+```
+
+### Lỗi: "Cannot find module 'postgres'"
 
 **Nguyên nhân:** Package chưa được cài đặt
 
 **Giải pháp:**
 ```bash
-npm install mongoose @types/mongoose
+npm install postgres drizzle-orm drizzle-kit
 ```
 
 ---
 
 ## Cấu trúc Database
 
-### Database: `siftly`
-
-#### Collection: `users`
-```javascript
-{
-  _id: ObjectId,
-  username: String (unique, required),
-  password: String (required),
-  createdAt: Date,
-  updatedAt: Date
-}
+### Table: `users`
+```sql
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  username TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
 ```
 
-#### Collection: `contacts`
-```javascript
-{
-  _id: ObjectId,
-  fullName: String (required),
-  email: String (required),
-  company: String (optional),
-  message: String (required),
-  newsletter: Boolean (default: false),
-  createdAt: Date,
-  updatedAt: Date
-}
+### Table: `contacts`
+```sql
+CREATE TABLE contacts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  company TEXT,
+  message TEXT NOT NULL,
+  newsletter BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
 ```
 
 ---
@@ -389,42 +241,44 @@ npm install mongoose @types/mongoose
    - Không chia sẻ connection string công khai
 
 2. **Bảo vệ Database Credentials:**
-   - Sử dụng strong password cho database user
+   - Sử dụng strong password cho database
    - Không hardcode credentials trong code
    - Sử dụng environment variables
+   - Sử dụng Supabase Row Level Security (RLS) nếu cần
 
 3. **Network Security:**
-   - Chỉ whitelist IP cần thiết (không dùng 0.0.0.0/0 trong production)
-   - Sử dụng VPN hoặc private network khi có thể
+   - Supabase tự động bảo vệ với SSL/TLS
+   - Connection string đã bao gồm SSL
+   - Không cần whitelist IP như MongoDB Atlas
 
 4. **Backup:**
-   - Backup database định kỳ
-   - MongoDB Atlas tự động backup (trong paid plans)
-   - Export data thủ công nếu cần
+   - Supabase Free tier có daily backups tự động
+   - Có thể export data từ Supabase Dashboard
+   - Sử dụng `pg_dump` để backup thủ công nếu cần
 
 ---
 
 ## Tài liệu Tham khảo
 
-- [MongoDB Installation Guide](https://docs.mongodb.com/manual/installation/)
-- [Mongoose Documentation](https://mongoosejs.com/docs/)
-- [MongoDB Atlas Setup](https://docs.atlas.mongodb.com/getting-started/)
-- [MongoDB Connection Strings](https://docs.mongodb.com/manual/reference/connection-string/)
+- [Supabase Documentation](https://supabase.com/docs)
+- [Drizzle ORM Documentation](https://orm.drizzle.team/)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [Supabase Connection Strings](https://supabase.com/docs/guides/database/connecting-to-postgres)
 
 ---
 
 ## Checklist Setup
 
-- [ ] MongoDB đã được cài đặt (Atlas hoặc Local)
-- [ ] Database user đã được tạo (nếu dùng Atlas)
-- [ ] IP đã được whitelist (nếu dùng Atlas)
+- [ ] Supabase project đã được tạo
+- [ ] Database password đã được lưu lại
 - [ ] Connection string đã được lấy
 - [ ] DATABASE_URL đã được set (file .env hoặc environment variable)
 - [ ] Dependencies đã được cài đặt (`npm install`)
+- [ ] Schema đã được push (`npm run db:push`)
 - [ ] Server chạy thành công (`npm run dev`)
-- [ ] Log hiển thị "MongoDB connected successfully"
+- [ ] Log hiển thị "Supabase PostgreSQL connected successfully"
+- [ ] Tables đã được tạo trong Supabase Dashboard
 - [ ] Test submit form Contact Us thành công
-- [ ] Collections đã được tạo trong database
 
 ---
 
@@ -527,6 +381,21 @@ ALLOWED_ADMIN_EMAILS=admin@example.com,another@example.com
 - **ALLOWED_ADMIN_EMAILS**: Nếu set, chỉ những email này mới có thể login. Nếu không set, tất cả Google accounts đều có thể login.
 - **SESSION_SECRET**: Nên dùng random string mạnh trong production. Có thể generate bằng: `openssl rand -base64 32`
 - **GOOGLE_CALLBACK_URL**: Phải khớp với redirect URI đã set trong Google Cloud Console
+
+---
+
+## Migration từ MongoDB
+
+Nếu bạn đang migrate từ MongoDB, các thay đổi chính:
+
+1. **Schema**: Từ Mongoose schemas sang Drizzle schemas
+2. **Connection**: Từ MongoDB connection string sang PostgreSQL connection string
+3. **Queries**: Từ Mongoose queries sang Drizzle queries
+4. **ID**: Từ `_id` (ObjectId) sang `id` (UUID)
+
+Sau khi migrate:
+- Chạy `npm run db:push` để tạo tables
+- Dữ liệu cũ cần được migrate thủ công nếu có
 
 ---
 
