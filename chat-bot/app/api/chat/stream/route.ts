@@ -7,6 +7,17 @@ import type { ChatMessage } from '@/lib/deepseek'
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
+// CORS helper
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS_HEADERS })
+}
+
 // Initialize database connection
 let dbInitialized = false
 
@@ -26,7 +37,7 @@ export async function POST(request: NextRequest) {
     if (!message || typeof message !== 'string') {
       return new Response(
         JSON.stringify({ error: 'Message is required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        { status: 400, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS } }
       )
     }
 
@@ -87,13 +98,14 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
+        ...CORS_HEADERS,
       },
     })
   } catch (error: any) {
     console.error('Stream chat API error:', error)
     return new Response(
       JSON.stringify({ error: error.message || 'Internal server error' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      { status: 500, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS } }
     )
   }
 }

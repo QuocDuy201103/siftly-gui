@@ -14,8 +14,8 @@ import { generateChatCompletion, streamChatCompletion, type ChatMessage } from "
 import { saveChatMessage } from "../chat-history";
 import { getChatHistory } from "../chat-history";
 
-const CONFIDENCE_THRESHOLD = 0.5; // Minimum confidence to answer directly (lowered for better recall)
-const LOW_CONFIDENCE_THRESHOLD = 0.2; // Below this, ask for clarification (lowered for better recall)
+const CONFIDENCE_THRESHOLD = 0.35; // Minimum confidence to answer directly (lowered)
+const LOW_CONFIDENCE_THRESHOLD = 0.1; // Below this, ask for clarification (lowered to match DB filter)
 
 export interface RAGResponse {
   response: string;
@@ -57,17 +57,20 @@ export async function generateRAGResponse(
   }
 
   // Step 1: Retrieve relevant articles
+  console.time('Vector Search');
   const { results, confidence } = await searchSimilarArticles(userMessage);
+  console.timeEnd('Vector Search');
+  console.log(`🔍 Confidence Score: ${confidence}`); // Debug log
 
   // Step 2: Check confidence and decide action
   if (confidence < LOW_CONFIDENCE_THRESHOLD) {
     // Very low confidence - route to human
     // Detect language and respond accordingly
     const isVietnamese = /[\u00C0-\u1EF9]/.test(userMessage) || /tiếng|việt|sao|gì|nào|làm|thế/i.test(userMessage);
-    const response = isVietnamese 
+    const response = isVietnamese
       ? "Tôi không có đủ thông tin để trả lời câu hỏi của bạn một cách chính xác. Bạn có muốn tôi kết nối bạn với nhân viên hỗ trợ không?"
       : "I'm not sure I have enough information to answer your question accurately. Would you like me to connect you with a human support agent who can help you better?";
-    
+
     const ragResponse: RAGResponse = {
       response,
       sources: [],
@@ -93,7 +96,7 @@ export async function generateRAGResponse(
   if (confidence < CONFIDENCE_THRESHOLD) {
     // Low confidence - ask clarifying question
     const clarifyingQuestion = generateClarifyingQuestion(userMessage, results);
-    
+
     const ragResponse: RAGResponse = {
       response: clarifyingQuestion,
       sources: results.map(r => ({
@@ -123,18 +126,20 @@ export async function generateRAGResponse(
   // Step 3: High confidence - generate answer with context
   const context = buildContextFromResults(results);
   const systemPrompt = buildSystemPrompt();
-  
+
   const messages: ChatMessage[] = [
     { role: "system", content: systemPrompt },
     ...history,
     { role: "user", content: `Context:\n${context}\n\nQuestion: ${userMessage}\n\nPlease answer based ONLY on the provided context. If the answer is not in the context, say so.` },
   ];
 
+  console.time('DeepSeek Generation');
   const completion = await generateChatCompletion({
     messages,
     temperature: 0.7,
     maxTokens: 2000,
   });
+  console.timeEnd('DeepSeek Generation');
 
   // Format response with citations
   const responseWithCitations = formatResponseWithCitations(
@@ -191,7 +196,7 @@ export async function* streamRAGResponse(
   // Step 2: Check confidence
   if (confidence < LOW_CONFIDENCE_THRESHOLD) {
     const response = "I'm not sure I have enough information to answer your question accurately. Would you like me to connect you with a human support agent who can help you better?";
-    
+
     // Stream the response
     for (const char of response) {
       yield { content: char };
@@ -217,7 +222,7 @@ export async function* streamRAGResponse(
 
   if (confidence < CONFIDENCE_THRESHOLD) {
     const clarifyingQuestion = generateClarifyingQuestion(userMessage, results);
-    
+
     // Stream the response
     for (const char of clarifyingQuestion) {
       yield { content: char };
@@ -252,7 +257,7 @@ export async function* streamRAGResponse(
   // Step 3: High confidence - stream answer with context
   const context = buildContextFromResults(results);
   const systemPrompt = buildSystemPrompt();
-  
+
   const messages: ChatMessage[] = [
     { role: "system", content: systemPrompt },
     ...history,
@@ -324,7 +329,10 @@ IMPORTANT RULES:
 4. Always cite which source(s) you used when answering
 5. Be concise and helpful
 6. If asked about something not in the context, suggest the user contact support or ask a clarifying question
-7. **ALWAYS respond in the SAME LANGUAGE as the user's question** (e.g., if the user asks in Vietnamese, answer in Vietnamese; if in English, answer in English)`;
+7. **CRITICAL: ANSWER IN THE SAME LANGUAGE AS THE USER'S QUESTION**.
+    - If the user asks in English, you MUST answer in English, even if the context is in Vietnamese. TRANSLATE the information from the context.
+    - If the user asks in Vietnamese, answer in Vietnamese.
+    - Do not just copy the context language if it doesn't match the user's question.`;
 }
 
 /**
@@ -355,7 +363,7 @@ function generateClarifyingQuestion(
 ): string {
   // Detect language based on user message
   const isVietnamese = /[\u00C0-\u1EF9]/.test(userMessage) || /tiếng|việt|sao|gì|nào|làm|thế/i.test(userMessage);
-  
+
   if (results.length === 0) {
     return isVietnamese
       ? "Tôi tìm thấy một số bài viết liên quan, nhưng tôi muốn chắc chắn rằng tôi hiểu đúng câu hỏi của bạn. Bạn có thể cung cấp thêm chi tiết về những gì bạn đang tìm kiếm không?"

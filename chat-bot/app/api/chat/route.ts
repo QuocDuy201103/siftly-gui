@@ -7,6 +7,17 @@ import type { ChatMessage } from '@/lib/deepseek'
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
+// CORS helper
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS_HEADERS });
+}
+
 // Initialize database connection
 let dbInitialized = false
 
@@ -26,7 +37,7 @@ export async function POST(request: NextRequest) {
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
         { error: 'Message is required' },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       )
     }
 
@@ -44,11 +55,13 @@ export async function POST(request: NextRequest) {
     }))
 
     // Generate RAG response
+    console.time('RAG Pipeline');
     const ragResponse = await generateRAGResponse(
       message,
       history,
       currentSessionId
     )
+    console.timeEnd('RAG Pipeline');
 
     return NextResponse.json({
       response: ragResponse.response,
@@ -57,12 +70,12 @@ export async function POST(request: NextRequest) {
       requiresHuman: ragResponse.requiresHuman,
       clarificationNeeded: ragResponse.clarificationNeeded,
       sessionId: currentSessionId,
-    })
+    }, { headers: CORS_HEADERS })
   } catch (error: any) {
     console.error('Chat API error:', error)
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     )
   }
 }

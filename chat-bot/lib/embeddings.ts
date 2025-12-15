@@ -4,16 +4,15 @@
  * Compatible with pgvector
  */
 
-const HUGGINGFACE_MODEL = process.env.HUGGINGFACE_EMBEDDING_MODEL || "BAAI/bge-m3";
+const HUGGINGFACE_MODEL = process.env.HUGGINGFACE_EMBEDDING_MODEL || "sentence-transformers/all-MiniLM-L6-v2";
 // New HuggingFace router API format: https://router.huggingface.co/hf-inference/models/{model}/pipeline/{pipeline}
 const HUGGINGFACE_API_URL = process.env.HUGGINGFACE_API_URL || `https://router.huggingface.co/hf-inference/models/${HUGGINGFACE_MODEL}/pipeline/feature-extraction`;
-// BAAI/bge-m3 has 1024 dimensions
-// This should match the vector dimensions in the database schema
-export const EMBEDDING_DIMENSIONS = parseInt(process.env.EMBEDDING_DIMENSIONS || "1024");
+// all-MiniLM-L6-v2 has 384 dimensions
+export const EMBEDDING_DIMENSIONS = parseInt(process.env.EMBEDDING_DIMENSIONS || "384");
 
 export async function generateEmbedding(text: string): Promise<number[]> {
   const apiKey = process.env.HUGGINGFACE_API_KEY;
-  
+
   if (!apiKey) {
     throw new Error("HUGGINGFACE_API_KEY environment variable is not set. Get your API key from https://huggingface.co/settings/tokens");
   }
@@ -34,43 +33,43 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     if (!response.ok) {
       const errorText = await response.text();
       let errorMessage = `HuggingFace API error (${response.status} ${response.statusText})`;
-      
+
       try {
         const errorJson = JSON.parse(errorText);
         errorMessage += `: ${errorJson.error || errorJson.message || JSON.stringify(errorJson)}`;
       } catch {
         errorMessage += `: ${errorText || 'Unknown error'}`;
       }
-      
+
       // If model is loading, wait and retry
       if (response.status === 503) {
         const retryAfter = response.headers.get('retry-after');
         const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : 10000;
-        console.warn(`Model is loading. Waiting ${waitTime/1000}s before retry...`);
+        console.warn(`Model is loading. Waiting ${waitTime / 1000}s before retry...`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
         return generateEmbedding(text); // Retry
       }
-      
+
       console.error('API Response:', {
         status: response.status,
         statusText: response.statusText,
         headers: Object.fromEntries(response.headers.entries()),
         body: errorText
       });
-      
+
       throw new Error(errorMessage);
     }
 
     const data = await response.json();
-    
+
     // Log response structure for debugging
     if (process.env.DEBUG_EMBEDDINGS) {
       console.log('Embedding API response:', JSON.stringify(data, null, 2));
     }
-    
+
     // HuggingFace returns array directly: [[0.1, 0.2, ...]] or [0.1, 0.2, ...]
     let embedding: number[];
-    
+
     if (Array.isArray(data)) {
       // If nested array, take first element
       if (Array.isArray(data[0])) {
@@ -84,20 +83,27 @@ export async function generateEmbedding(text: string): Promise<number[]> {
       console.error('Invalid embedding response structure:', data);
       throw new Error(`Invalid embedding response from HuggingFace API. Expected array, got: ${typeof data}`);
     }
-    
+
     if (!embedding || !Array.isArray(embedding)) {
       console.error('Invalid embedding response structure:', data);
       throw new Error(`Invalid embedding response from HuggingFace API. Expected array, got: ${typeof embedding}`);
     }
-    
+
     // Validate dimensions
     if (embedding.length !== EMBEDDING_DIMENSIONS) {
       console.warn(`Warning: Embedding dimensions mismatch. Expected ${EMBEDDING_DIMENSIONS}, got ${embedding.length}. Update EMBEDDING_DIMENSIONS if needed.`);
     }
-    
+
     return embedding;
   } catch (error) {
     console.error("Embedding generation error:", error);
+
+    // Fallback for development/demo if API is down
+    if (process.env.NODE_ENV === 'development') {
+      console.warn("⚠️ Falling back to MOCK embedding due to API error. RAG results will be random.");
+      return new Array(EMBEDDING_DIMENSIONS).fill(0).map(() => Math.random() * 0.01);
+    }
+
     throw error;
   }
 }
@@ -109,9 +115,9 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 export function chunkText(text: string, maxChunkSize: number = 6000): string[] {
   const chunks: string[] = [];
   const sentences = text.split(/[.!?]\s+/);
-  
+
   let currentChunk = "";
-  
+
   for (const sentence of sentences) {
     if (currentChunk.length + sentence.length > maxChunkSize && currentChunk.length > 0) {
       chunks.push(currentChunk.trim());
@@ -120,11 +126,11 @@ export function chunkText(text: string, maxChunkSize: number = 6000): string[] {
       currentChunk += (currentChunk ? ". " : "") + sentence;
     }
   }
-  
+
   if (currentChunk.trim().length > 0) {
     chunks.push(currentChunk.trim());
   }
-  
+
   return chunks;
 }
 

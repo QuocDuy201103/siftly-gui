@@ -22,12 +22,15 @@ function Router() {
   );
 }
 
+import { ChatWidget } from "@/components/ChatWidget";
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Router />
+        <ChatWidget />
       </TooltipProvider>
     </QueryClientProvider>
   );

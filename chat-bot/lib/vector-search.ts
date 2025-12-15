@@ -15,7 +15,7 @@ export interface SearchResult {
   similarity: number;
 }
 
-const SIMILARITY_THRESHOLD = 0.3; // Minimum cosine similarity score (lowered for better recall)
+const SIMILARITY_THRESHOLD = 0.1; // Minimum cosine similarity score (lowered to allow pipeline to filter)
 const MAX_RESULTS = 5;
 
 /**
@@ -29,38 +29,37 @@ export async function searchSimilarArticles(
 ): Promise<{ results: SearchResult[]; confidence: number }> {
   // Import getPostgresClient from db module
   const { getPostgresClient, connectDb } = await import("./db");
-  
+
   // Ensure database is connected
   await connectDb();
-  
+
   const client = getPostgresClient();
-  
+
   try {
     // Generate embedding for the query
     const queryEmbedding = await generateEmbedding(query);
-    
-    // Convert embedding array to PostgreSQL vector format string
-    // pgvector requires: '[0.1,0.2,0.3]' format (with brackets)
-    // postgres.js serializes array without brackets, so we need to format manually
+
+    // Convert embedding array to PostgreSQL vector literal string: '[0.1,0.2,...]'
     const vectorString = `[${queryEmbedding.join(',')}]`;
-    
-    // Use parameterized query with properly formatted vector string
-    // Cast the string to vector type in PostgreSQL
-    const rawResults = await client`
+
+    // Use unsafe with literal to ensure pgvector parses correctly
+    const rawResults = await client.unsafe(`
       SELECT 
         ae.article_id as "articleId",
         ae.content,
         ae.chunk_index as "chunkIndex",
-        1 - (${vectorString}::vector <=> ae.embedding) as similarity,
+        1 - ('${vectorString}'::vector <=> ae.embedding) as similarity,
         ha.id,
         ha.title,
         ha.url
       FROM article_embeddings ae
       INNER JOIN help_articles ha ON ae.article_id = ha.id
-      WHERE 1 - (${vectorString}::vector <=> ae.embedding) >= ${SIMILARITY_THRESHOLD}
-      ORDER BY ae.embedding <=> ${vectorString}::vector
+      WHERE 1 - ('${vectorString}'::vector <=> ae.embedding) >= ${SIMILARITY_THRESHOLD}
+      ORDER BY ae.embedding <=> '${vectorString}'::vector
       LIMIT ${limit}
-    `;
+    `);
+
+    console.log(`🔍 SQL Vector Search found ${Array.isArray(rawResults) ? rawResults.length : 0} matches above threshold ${SIMILARITY_THRESHOLD}`);
 
     // postgres client returns array directly
     const results = Array.isArray(rawResults) ? rawResults : [];

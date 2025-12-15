@@ -2,9 +2,8 @@ import { pgTable, text, boolean, timestamp, uuid, jsonb, real, integer, customTy
 import { z } from "zod";
 
 // Custom vector type for pgvector
-// DeepSeek embedding uses 1024 dimensions (default)
-// To use 1536 dimensions (e.g., for OpenAI), update this and the database schema
-const EMBEDDING_DIMENSIONS = 1024; // DeepSeek default, change to 1536 for OpenAI if needed
+// sentence-transformers/all-MiniLM-L6-v2 uses 384 dimensions
+const EMBEDDING_DIMENSIONS = 384;
 
 const vector = customType<{ data: number[]; driverData: string }>({
   dataType() {
