@@ -1,0 +1,91 @@
+I. Tài liệu Trợ giúp (Help Docs) của Siftly
+Tài liệu này sẽ là nguồn dữ liệu chính (Context) để bạn Indexing vào pgvector.
+
+1. Tính năng Tóm tắt Email (Summarization)
+Mô tả: Siftly sử dụng AI On-Device để phân tích và rút gọn nội dung email dài thành một bản tóm tắt ngắn gọn, giúp người dùng nắm bắt thông tin nhanh chóng mà không cần đọc toàn bộ thư.
+
+Các bước sử dụng:
+
+Bước 1: Mở ứng dụng Siftly.
+
+Bước 2: Chọn email bạn muốn tóm tắt.
+
+Bước 3: Nhấn vào biểu tượng "Tóm tắt" (hình cuốn sách).
+
+Bước 4: Bản tóm tắt sẽ xuất hiện ngay lập tức ở đầu email.
+
+Ghi chú: Tính năng này hoạt động hiệu quả nhất với các email có nội dung trên 500 từ.
+
+2. Tính năng Phân loại Email (Classification)
+Mô tả: Siftly tự động gán nhãn cho các email đến dựa trên nội dung và mục đích của chúng (ví dụ: Ưu tiên, Đơn hàng, Quảng cáo, Cá nhân, Khẩn cấp), giúp bạn quản lý hộp thư đến hiệu quả hơn.
+
+Thiết lập:
+
+Bước 1: Vào "Cài đặt" (Settings) > "Quản lý Hộp thư".
+
+Bước 2: Bật tùy chọn "Phân loại Tự động".
+
+Bước 3: Bạn có thể tùy chỉnh các nhãn phân loại trong mục "Nhãn tùy chỉnh".
+
+Lưu ý: Việc phân loại hoàn toàn được thực hiện trên thiết bị của bạn để đảm bảo quyền riêng tư.
+
+3. Tính năng Soạn thảo/Trả lời Email (Drafting)
+Mô tả: AI Deepseek LLM giúp người dùng tạo bản nháp trả lời email chuyên nghiệp hoặc soạn thảo email mới chỉ với vài từ khóa đầu vào.
+
+Hướng dẫn Soạn thảo:
+
+Bước 1: Bắt đầu một email mới hoặc trả lời một email hiện có.
+
+Bước 2: Gõ mục đích của bạn (ví dụ: "Trả lời đồng ý cuộc họp vào thứ Tư" hoặc "Soạn thư yêu cầu báo giá sản phẩm A").
+
+Bước 3: Nhấn biểu tượng "Draft AI" (hình cây bút).
+
+Bước 4: Siftly sẽ tạo bản nháp. Bạn có thể chọn các tùy chọn tinh chỉnh giọng văn (chính thức, thân mật, khẩn trương) trước khi gửi.
+
+4. Về AI On-Device và Deepseek LLM
+Mô tả: Siftly sử dụng Mô hình Ngôn ngữ Lớn (LLM) Deepseek chạy trực tiếp trên thiết bị di động của bạn.
+
+Lợi ích & Hạn chế:
+
+Quyền riêng tư: Dữ liệu email của bạn không bao giờ rời khỏi thiết bị để xử lý AI.
+
+Tốc độ: Tốc độ xử lý cực nhanh vì không cần gửi dữ liệu lên đám mây (cloud).
+
+Yêu cầu thiết bị: Tính năng này yêu cầu thiết bị có ít nhất 4GB RAM và hệ điều hành mới nhất (iOS 16+ hoặc Android 13+).
+
+Cập nhật: Mô hình Deepseek được cập nhật qua các bản vá ứng dụng (App updates).
+
+II. Các Câu hỏi Thường gặp (FAQ)
+Dùng các câu hỏi này để kiểm tra khả năng truy xuất và tạo sinh của chatbot.
+
+Quyền riêng tư & Công nghệ
+Siftly sử dụng công nghệ AI gì để xử lý email?
+
+Dữ liệu email của tôi có được gửi lên máy chủ của Siftly hay Deepseek không?
+
+Tính năng AI On-Device khác gì so với các ứng dụng email AI khác?
+
+Làm thế nào để tôi biết mô hình Deepseek LLM của tôi đã được cập nhật chưa?
+
+Tính năng Tóm tắt
+Làm thế nào để kích hoạt tính năng tóm tắt email?
+
+Tóm tắt có hoạt động với email bằng ngôn ngữ khác tiếng Việt không?
+
+Nếu tôi có một chuỗi email dài, Siftly có thể tóm tắt toàn bộ chuỗi không?
+
+Tính năng Phân loại
+Làm thế nào Siftly tự động phân loại email đến?
+
+Tôi có thể tạo các nhãn phân loại email tùy chỉnh được không?
+
+Tôi nên làm gì nếu Siftly phân loại nhầm một email?
+
+Tính năng Soạn thảo Email
+Tôi có thể yêu cầu Siftly viết email bằng giọng văn chính thức hay thân mật không?
+
+Sau khi AI tạo bản nháp, tôi có thể chỉnh sửa nó không?
+
+Nếu tôi chỉ gõ vài từ khóa, Siftly có thể tạo ra một email hoàn chỉnh được không?
+
+Tính năng soạn thảo có thể trả lời email ngay lập tức không?
