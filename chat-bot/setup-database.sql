@@ -40,6 +40,8 @@ USING hnsw (embedding vector_cosine_ops);
 CREATE TABLE IF NOT EXISTS chat_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id TEXT,
+  user_name TEXT,
+  user_email TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -56,9 +58,31 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+-- Zoho OAuth Tokens Table (for secure token storage)
+CREATE TABLE IF NOT EXISTS zoho_tokens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  access_token TEXT NOT NULL,
+  refresh_token TEXT NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Zoho Tickets Table (track handoff tickets)
+CREATE TABLE IF NOT EXISTS zoho_tickets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  ticket_id TEXT NOT NULL UNIQUE,
+  session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  handoff_reason TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS chat_messages_session_id_idx ON chat_messages(session_id);
 CREATE INDEX IF NOT EXISTS chat_messages_created_at_idx ON chat_messages(created_at);
 CREATE INDEX IF NOT EXISTS article_embeddings_article_id_idx ON article_embeddings(article_id);
 CREATE INDEX IF NOT EXISTS chat_sessions_user_id_idx ON chat_sessions(user_id);
+CREATE INDEX IF NOT EXISTS zoho_tickets_session_id_idx ON zoho_tickets(session_id);
+CREATE INDEX IF NOT EXISTS zoho_tickets_ticket_id_idx ON zoho_tickets(ticket_id);
 

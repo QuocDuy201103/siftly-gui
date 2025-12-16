@@ -7,7 +7,6 @@ import { HeroBannerSection } from "./sections/HeroBannerSection";
 import { OverviewSection } from "./sections/OverviewSection";
 import { SecurityFeaturesSection } from "./sections/SecurityFeaturesSection";
 import { ContactSection } from "./sections/ContactSection";
-import { ChatWidget } from "@/components/ChatWidget";
 
 export const Siftly = (): JSX.Element => {
   const [selectedLanguage, setSelectedLanguage] = React.useState<"EN" | "VI">(
@@ -129,10 +128,6 @@ export const Siftly = (): JSX.Element => {
         <ContactSection />
         <FeaturesSection />
       </main>
-
-      {/* Floating Chatbot Widget */}
-      <ChatWidget />
-
     </div>
   );
 };

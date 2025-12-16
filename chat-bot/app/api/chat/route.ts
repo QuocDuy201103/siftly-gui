@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
   try {
     await ensureDbConnected()
 
-    const { message, sessionId, userId } = await request.json()
+    const { message, sessionId, userId, userName, userEmail } = await request.json()
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
@@ -44,7 +44,11 @@ export async function POST(request: NextRequest) {
     // Get or create session
     let currentSessionId = sessionId
     if (!currentSessionId) {
-      currentSessionId = await createChatSession(userId)
+      currentSessionId = await createChatSession(userId, userName, userEmail)
+    } else if (userName || userEmail) {
+      // Update session with user info if provided
+      const { updateSessionUserInfo } = await import('@/lib/chat-history')
+      await updateSessionUserInfo(currentSessionId, userName, userEmail)
     }
 
     // Get chat history for context

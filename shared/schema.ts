@@ -87,6 +87,8 @@ export const articleEmbeddings = pgTable("article_embeddings", {
 export const chatSessions = pgTable("chat_sessions", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id"), // Optional: can be null for anonymous users
+  userName: text("user_name"), // User's name for handoff
+  userEmail: text("user_email"), // User's email for handoff
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -133,7 +135,31 @@ export type HelpArticle = typeof helpArticles.$inferSelect;
 export type NewHelpArticle = typeof helpArticles.$inferInsert;
 export type ArticleEmbedding = typeof articleEmbeddings.$inferSelect;
 export type NewArticleEmbedding = typeof articleEmbeddings.$inferInsert;
+// Zoho OAuth Tokens Schema (for secure token storage)
+export const zohoTokens = pgTable("zoho_tokens", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  accessToken: text("access_token").notNull(), // Encrypted in production
+  refreshToken: text("refresh_token").notNull(), // Encrypted in production
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Zoho Tickets Schema (track handoff tickets)
+export const zohoTickets = pgTable("zoho_tickets", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  ticketId: text("ticket_id").notNull().unique(), // Zoho Desk ticket ID
+  sessionId: uuid("session_id").notNull().references(() => chatSessions.id, { onDelete: "cascade" }),
+  handoffReason: text("handoff_reason").notNull(), // e.g., "Low Confidence - 52%" or "User requested human"
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export type ChatSession = typeof chatSessions.$inferSelect;
 export type NewChatSession = typeof chatSessions.$inferInsert;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type NewChatMessage = typeof chatMessages.$inferInsert;
+export type ZohoToken = typeof zohoTokens.$inferSelect;
+export type NewZohoToken = typeof zohoTokens.$inferInsert;
+export type ZohoTicket = typeof zohoTickets.$inferSelect;
+export type NewZohoTicket = typeof zohoTickets.$inferInsert;

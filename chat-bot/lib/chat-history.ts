@@ -22,15 +22,42 @@ export interface ChatMessageInput {
 /**
  * Create a new chat session
  */
-export async function createChatSession(userId?: string): Promise<string> {
+export async function createChatSession(
+  userId?: string,
+  userName?: string,
+  userEmail?: string
+): Promise<string> {
   const db = getDb();
   
   const newSession: NewChatSession = {
     userId: userId || null,
+    userName: userName || null,
+    userEmail: userEmail || null,
   };
   
   const [session] = await db.insert(chatSessions).values(newSession).returning();
   return session.id;
+}
+
+/**
+ * Update user info in a chat session
+ */
+export async function updateSessionUserInfo(
+  sessionId: string,
+  userName?: string,
+  userEmail?: string
+): Promise<void> {
+  const db = getDb();
+  const { eq } = await import('drizzle-orm');
+  
+  await db
+    .update(chatSessions)
+    .set({
+      userName: userName !== undefined ? userName : undefined,
+      userEmail: userEmail !== undefined ? userEmail : undefined,
+      updatedAt: new Date(),
+    })
+    .where(eq(chatSessions.id, sessionId));
 }
 
 /**
@@ -73,6 +100,21 @@ export async function getChatHistory(sessionId: string, limit: number = 50) {
     .limit(limit);
   
   return messages.reverse(); // Return in chronological order
+}
+
+/**
+ * Get a session by session ID
+ */
+export async function getUserSession(sessionId: string) {
+  const db = getDb();
+  
+  const [session] = await db
+    .select()
+    .from(chatSessions)
+    .where(eq(chatSessions.id, sessionId))
+    .limit(1);
+  
+  return session || null;
 }
 
 /**

@@ -16,6 +16,7 @@ import { getChatHistory } from "../chat-history";
 
 const CONFIDENCE_THRESHOLD = 0.35; // Minimum confidence to answer directly (lowered)
 const LOW_CONFIDENCE_THRESHOLD = 0.1; // Below this, ask for clarification (lowered to match DB filter)
+const HANDOFF_CONFIDENCE_THRESHOLD = 0.6; // Below 60% confidence, trigger handoff
 
 export interface RAGResponse {
   response: string;
@@ -62,14 +63,45 @@ export async function generateRAGResponse(
   console.timeEnd('Vector Search');
   console.log(`🔍 Confidence Score: ${confidence}`); // Debug log
 
-  // Step 2: Check confidence and decide action
-  if (confidence < LOW_CONFIDENCE_THRESHOLD) {
-    // Very low confidence - route to human
+  // Step 2: Check for handoff triggers
+  const handoffKeywords = [
+    "nói chuyện với người",
+    "nói chuyện với nhân viên",
+    "gặp nhân viên",
+    "human",
+    "agent",
+    "support agent",
+    "speak to someone",
+    "talk to human",
+    "talk to agent",
+    "connect me with",
+    "kết nối với",
+    "chuyển cho",
+  ];
+  
+  const userMessageLower = userMessage.toLowerCase();
+  const hasHandoffKeyword = handoffKeywords.some(keyword => 
+    userMessageLower.includes(keyword.toLowerCase())
+  );
+
+  // Check if confidence is below handoff threshold OR user requested human
+  const shouldHandoff = confidence < HANDOFF_CONFIDENCE_THRESHOLD || hasHandoffKeyword;
+
+  if (shouldHandoff) {
+    // Trigger handoff - route to human
     // Detect language and respond accordingly
     const isVietnamese = /[\u00C0-\u1EF9]/.test(userMessage) || /tiếng|việt|sao|gì|nào|làm|thế/i.test(userMessage);
+    
+    let handoffReason: string;
+    if (hasHandoffKeyword) {
+      handoffReason = "User requested human";
+    } else {
+      handoffReason = `Low Confidence - ${Math.round(confidence * 100)}%`;
+    }
+
     const response = isVietnamese
-      ? "Tôi không có đủ thông tin để trả lời câu hỏi của bạn một cách chính xác. Bạn có muốn tôi kết nối bạn với nhân viên hỗ trợ không?"
-      : "I'm not sure I have enough information to answer your question accurately. Would you like me to connect you with a human support agent who can help you better?";
+      ? "Tôi hiểu bạn muốn được kết nối với nhân viên hỗ trợ. Tôi sẽ tạo ticket hỗ trợ cho bạn ngay bây giờ. Vui lòng cung cấp tên và email của bạn để chúng tôi có thể liên hệ."
+      : "I understand you'd like to speak with a human support agent. I'll create a support ticket for you right away. Please provide your name and email so we can contact you.";
 
     const ragResponse: RAGResponse = {
       response,
@@ -93,6 +125,38 @@ export async function generateRAGResponse(
     return ragResponse;
   }
 
+  // Step 3: Check for very low confidence (below LOW_CONFIDENCE_THRESHOLD)
+  if (confidence < LOW_CONFIDENCE_THRESHOLD) {
+    // Very low confidence - ask for clarification
+    const clarifyingQuestion = generateClarifyingQuestion(userMessage, results);
+
+    const ragResponse: RAGResponse = {
+      response: clarifyingQuestion,
+      sources: results.map(r => ({
+        articleId: r.articleId,
+        url: r.url,
+        title: r.title,
+      })),
+      confidence,
+      requiresHuman: false,
+      clarificationNeeded: true,
+    };
+
+    // Save assistant response
+    if (sessionId) {
+      await saveChatMessage({
+        sessionId,
+        role: "assistant",
+        content: clarifyingQuestion,
+        sources: ragResponse.sources,
+        confidence,
+      });
+    }
+
+    return ragResponse;
+  }
+
+  // Step 4: Check for low confidence (below CONFIDENCE_THRESHOLD but above LOW_CONFIDENCE_THRESHOLD)
   if (confidence < CONFIDENCE_THRESHOLD) {
     // Low confidence - ask clarifying question
     const clarifyingQuestion = generateClarifyingQuestion(userMessage, results);
@@ -123,7 +187,7 @@ export async function generateRAGResponse(
     return ragResponse;
   }
 
-  // Step 3: High confidence - generate answer with context
+  // Step 5: High confidence - generate answer with context
   const context = buildContextFromResults(results);
   const systemPrompt = buildSystemPrompt();
 
@@ -193,9 +257,35 @@ export async function* streamRAGResponse(
   // Step 1: Retrieve relevant articles
   const { results, confidence } = await searchSimilarArticles(userMessage);
 
-  // Step 2: Check confidence
-  if (confidence < LOW_CONFIDENCE_THRESHOLD) {
-    const response = "I'm not sure I have enough information to answer your question accurately. Would you like me to connect you with a human support agent who can help you better?";
+  // Step 2: Check for handoff triggers
+  const handoffKeywords = [
+    "nói chuyện với người",
+    "nói chuyện với nhân viên",
+    "gặp nhân viên",
+    "human",
+    "agent",
+    "support agent",
+    "speak to someone",
+    "talk to human",
+    "talk to agent",
+    "connect me with",
+    "kết nối với",
+    "chuyển cho",
+  ];
+  
+  const userMessageLower = userMessage.toLowerCase();
+  const hasHandoffKeyword = handoffKeywords.some(keyword => 
+    userMessageLower.includes(keyword.toLowerCase())
+  );
+
+  // Check if confidence is below handoff threshold OR user requested human
+  const shouldHandoff = confidence < HANDOFF_CONFIDENCE_THRESHOLD || hasHandoffKeyword;
+
+  if (shouldHandoff) {
+    const isVietnamese = /[\u00C0-\u1EF9]/.test(userMessage) || /tiếng|việt|sao|gì|nào|làm|thế/i.test(userMessage);
+    const response = isVietnamese
+      ? "Tôi hiểu bạn muốn được kết nối với nhân viên hỗ trợ. Tôi sẽ tạo ticket hỗ trợ cho bạn ngay bây giờ. Vui lòng cung cấp tên và email của bạn để chúng tôi có thể liên hệ."
+      : "I understand you'd like to speak with a human support agent. I'll create a support ticket for you right away. Please provide your name and email so we can contact you.";
 
     // Stream the response
     for (const char of response) {
@@ -215,6 +305,41 @@ export async function* streamRAGResponse(
         content: response,
         confidence,
         requiresHuman: true,
+      });
+    }
+    return;
+  }
+
+  // Step 3: Check for very low confidence
+  if (confidence < LOW_CONFIDENCE_THRESHOLD) {
+    const clarifyingQuestion = generateClarifyingQuestion(userMessage, results);
+
+    // Stream the response
+    for (const char of clarifyingQuestion) {
+      yield { content: char };
+    }
+
+    yield {
+      done: true,
+      sources: results.map(r => ({
+        articleId: r.articleId,
+        url: r.url,
+        title: r.title,
+      })),
+    };
+
+    // Save assistant response
+    if (sessionId) {
+      await saveChatMessage({
+        sessionId,
+        role: "assistant",
+        content: clarifyingQuestion,
+        sources: results.map(r => ({
+          articleId: r.articleId,
+          url: r.url,
+          title: r.title,
+        })),
+        confidence,
       });
     }
     return;
