@@ -57,13 +57,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Get chat history (last 10 messages for context)
-    const chatHistory = await getChatHistory(sessionId, 10)
+    const chatHistory = (await getChatHistory(sessionId, 10)) as any[]
     
     // Get session info to retrieve user details
-    const session = await getUserSession(sessionId)
+    const session = (await getUserSession(sessionId)) as any
 
     // Format chat history for handoff
-    const formattedHistory = chatHistory.map(msg => ({
+    const formattedHistory = chatHistory.map((msg) => ({
       role: msg.role as 'user' | 'assistant',
       content: msg.content,
       timestamp: msg.createdAt?.toISOString(),
@@ -71,8 +71,8 @@ export async function POST(request: NextRequest) {
 
     // Determine handoff reason
     const reason = handoffReason || 
-      (chatHistory.find(msg => msg.requiresHuman) 
-        ? `Low Confidence - ${Math.round((chatHistory.find(msg => msg.requiresHuman)?.confidence || 0) * 100)}%`
+      (chatHistory.find((msg) => msg.requiresHuman) 
+        ? `Low Confidence - ${Math.round((chatHistory.find((msg) => msg.requiresHuman)?.confidence || 0) * 100)}%`
         : 'User requested human')
 
     // Create handoff context

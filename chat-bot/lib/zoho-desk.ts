@@ -4,7 +4,7 @@
  */
 
 import { getDb } from "./db";
-import { zohoTokens, zohoTickets, type NewZohoToken, type NewZohoTicket } from "../../shared/schema";
+import { zohoTokens, zohoTickets, type NewZohoToken, type NewZohoTicket, type ZohoTicket } from "../../shared/schema";
 import { eq } from "drizzle-orm";
 
 // Zoho Desk API Configuration - Read from env at runtime
@@ -32,6 +32,12 @@ interface ZohoTicketResponse {
   ticketNumber: string;
   subject: string;
   status: string;
+  [key: string]: any;
+}
+
+interface ZohoCommentResponse {
+  id: string;
+  content?: string;
   [key: string]: any;
 }
 
@@ -151,27 +157,29 @@ export async function createHandoffTicket(context: HandoffContext): Promise<Zoho
 
   // Format chat history for ticket description
   const chatHistoryText = context.chatHistory
-    .map((msg) => `[${msg.role === "user" ? "User" : "Assistant"}] ${msg.content}`)
-    .join("\n\n");
+    .map((msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
+    .join("\n");
 
   const ticketSubject = context.handoffReason.includes("Low Confidence")
     ? `Chatbot Handoff - Low Confidence (${context.sessionId.slice(0, 8)})`
     : `Chatbot Handoff - User Request (${context.sessionId.slice(0, 8)})`;
 
-  const ticketDescription = `
-**Handoff Reason:** ${context.handoffReason}
-
-**User Information:**
-- Name: ${context.userName || "Not provided"}
-- Email: ${context.userEmail || "Not provided"}
-- Session ID: ${context.sessionId}
-
-**Chat History:**
-${chatHistoryText}
-
----
-*This ticket was automatically created by the chatbot handoff system.*
-  `.trim();
+  const ticketDescription = [
+    "Siftly Chatbot Human Handoff",
+    "----------------------------------------",
+    `Handoff reason: ${context.handoffReason}`,
+    "",
+    "User information:",
+    `- Name: ${context.userName || "Not provided"}`,
+    `- Email: ${context.userEmail || "Not provided"}`,
+    `- Session ID: ${context.sessionId}`,
+    "",
+    "Chat history:",
+    chatHistoryText || "(no prior messages)",
+    "",
+    "----------------------------------------",
+    "Note: This ticket was automatically created by the chatbot handoff system.",
+  ].join("\n");
 
   const config = getZohoConfig();
   
@@ -269,6 +277,68 @@ ${chatHistoryText}
 }
 
 /**
+ * Add a message to an existing Zoho Desk ticket.
+ * Zoho payloads vary by account/config, so we try comments first, then threads as fallback.
+ */
+export async function addMessageToTicket(params: {
+  ticketId: string;
+  content: string;
+  isPublic?: boolean;
+}): Promise<ZohoCommentResponse> {
+  const accessToken = await getValidAccessToken();
+  const config = getZohoConfig();
+
+  const headers: Record<string, string> = {
+    Authorization: `Zoho-oauthtoken ${accessToken}`,
+    "Content-Type": "application/json",
+  };
+  // Many Zoho Desk APIs require orgId header
+  if (config.orgId) {
+    headers.orgId = config.orgId;
+  }
+
+  const publicFlag = params.isPublic ?? true;
+
+  const tryEndpoints: Array<{ url: string; body: any }> = [
+    // Common patterns across Zoho Desk setups
+    { url: `${config.deskApiUrl}/tickets/${params.ticketId}/comments`, body: { content: params.content, isPublic: publicFlag } },
+    { url: `${config.deskApiUrl}/tickets/${params.ticketId}/threads`, body: { content: params.content, isPublic: publicFlag } },
+    { url: `${config.deskApiUrl}/tickets/${params.ticketId}/responses`, body: { content: params.content, isPublic: publicFlag } },
+    { url: `${config.deskApiUrl}/tickets/${params.ticketId}/reply`, body: { content: params.content } },
+    { url: `${config.deskApiUrl}/tickets/${params.ticketId}/sendReply`, body: { content: params.content } },
+  ];
+
+  const errors: string[] = [];
+  for (const { url, body } of tryEndpoints) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    if (res.ok) {
+      return (await res.json()) as ZohoCommentResponse;
+    }
+
+    const text = await res.text();
+    errors.push(`POST ${url} -> ${res.status} ${text}`);
+
+    // If unauthorized, scopes are likely missing (common when token only has CREATE)
+    if (res.status === 401) {
+      break;
+    }
+  }
+
+  const joined = errors.join(" | ");
+  const hint =
+    joined.includes("401")
+      ? " (Hint: your Zoho OAuth token likely lacks ticket update/reply scopes. Re-generate refresh token with Desk.tickets.UPDATE or Desk.tickets.ALL plus Desk.tickets.READ.)"
+      : "";
+
+  throw new Error(`Failed to add message to Zoho ticket ${params.ticketId}: ${joined || "Unknown error"}${hint}`);
+}
+
+/**
  * Get ticket by session ID
  */
 export async function getTicketBySessionId(sessionId: string) {
@@ -279,7 +349,7 @@ export async function getTicketBySessionId(sessionId: string) {
     .where(eq(zohoTickets.sessionId, sessionId))
     .limit(1);
 
-  return ticket || null;
+  return (ticket as ZohoTicket) || null;
 }
 
 /**

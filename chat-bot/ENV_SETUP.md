@@ -11,6 +11,14 @@ Tạo file `.env.local` trong thư mục `chat-bot` với nội dung sau:
 DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.xxxxx.supabase.co:5432/postgres
 
 # ============================================
+# Supabase Realtime (Human Handoff live chat)
+# - SUPABASE_URL + keys lấy từ Supabase Dashboard → Project Settings → API
+# - Service role key CHỈ dùng ở server (webhook), không bao giờ đưa vào frontend
+# ============================================
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+
+# ============================================
 # DeepSeek AI Configuration
 # (Dùng cho chat completions - text generation)
 # ============================================
@@ -36,6 +44,9 @@ ZOHO_ORG_ID=your-zoho-org-id
 ZOHO_CLIENT_ID=your-zoho-client-id
 ZOHO_CLIENT_SECRET=your-zoho-client-secret
 ZOHO_REFRESH_TOKEN=your-zoho-refresh-token
+
+# (Optional) Protect webhook endpoint: chat-bot/app/api/zoho/webhook
+ZOHO_WEBHOOK_SECRET=your-random-secret-string
 
 # ============================================
 # Optional Settings

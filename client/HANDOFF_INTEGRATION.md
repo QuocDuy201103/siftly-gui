@@ -98,6 +98,31 @@ const response = await fetch('http://localhost:YOUR_PORT/api/chat/handoff', {
 - `ZOHO_ORG_ID`
 - `ZOHO_DEPARTMENT_ID`
 
+### Realtime (hiển thị reply của nhân viên ngay trên web)
+
+1) **Tạo bảng realtime**: chạy file `chat-bot/setup-realtime.sql` trong Supabase SQL Editor.
+
+2) **Cấu hình frontend (Vite)**: tạo `.env` (hoặc `.env.local`) ở **root project** với:
+
+```env
+VITE_SUPABASE_URL=https://xxxx.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+3) **Cấu hình server webhook (Next.js chat-bot)**: trong `chat-bot/.env.local` thêm:
+
+```env
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+ZOHO_WEBHOOK_SECRET=your-random-secret-string
+```
+
+4) **Zoho Desk Webhook**: trỏ webhook về endpoint:
+- `POST /api/zoho/webhook`
+- Header: `X-Zoho-Webhook-Secret: <ZOHO_WEBHOOK_SECRET>`
+
+Khi nhân viên trả lời trong Zoho Desk, webhook sẽ ghi message vào `handoff_messages` → Supabase Realtime push → ChatWidget tự hiện ngay (không reload).
+
 ## 📝 Code Structure
 
 ### State Management

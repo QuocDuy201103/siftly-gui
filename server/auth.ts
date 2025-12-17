@@ -2,6 +2,7 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import session from "express-session";
 import type { Request, Response, NextFunction } from "express";
+import type { Profile, VerifyCallback } from "passport-google-oauth20";
 
 // Extend Express Request type to include user and isAuthenticated
 declare global {
@@ -35,7 +36,12 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
       callbackURL: process.env.GOOGLE_CALLBACK_URL || "/api/auth/google/callback",
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (
+      _accessToken: string,
+      _refreshToken: string,
+      profile: Profile,
+      done: VerifyCallback
+    ) => {
       try {
         // Check if user email is allowed (you can add allowed emails in .env)
         const allowedEmails = process.env.ALLOWED_ADMIN_EMAILS?.split(",") || [];

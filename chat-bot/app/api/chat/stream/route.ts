@@ -48,8 +48,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get chat history for context
-    const chatHistory = await getChatHistory(currentSessionId)
-    const history: ChatMessage[] = chatHistory.map(msg => ({
+    const chatHistory = (await getChatHistory(currentSessionId)) as any[]
+    const history: ChatMessage[] = chatHistory.map((msg) => ({
       role: msg.role as 'user' | 'assistant',
       content: msg.content,
     }))
