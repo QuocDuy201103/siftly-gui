@@ -33,10 +33,10 @@ export function ChatWidget() {
 
   // Quick options are sourced from the FAQ questions in `chat-bot/docs`
   const QUICK_OPTIONS: Array<{ label: string; message: string }> = [
-    { label: 'AI & công nghệ', message: 'Siftly sử dụng công nghệ AI gì để xử lý email?' },
-    { label: 'Quyền riêng tư', message: 'Dữ liệu email của tôi có được gửi lên máy chủ của Siftly hay Deepseek không?' },
-    { label: 'Tóm tắt email', message: 'Làm thế nào để kích hoạt tính năng tóm tắt email?' },
-    { label: 'Phân loại email', message: 'Tôi có thể tạo các nhãn phân loại email tùy chỉnh được không?' },
+    { label: 'AI & Technology', message: 'What AI technology does Siftly use to process email?' },
+    { label: 'Privacy', message: 'Is my email data uploaded to Siftly or DeepSeek servers?' },
+    { label: 'Summarization', message: 'How do I enable email summarization?' },
+    { label: 'Classification', message: 'Can I create custom email classification labels?' },
   ];
 
   const scrollToBottom = () => {
@@ -384,23 +384,13 @@ export function ChatWidget() {
         setHandoffTicketId(data.ticketId || null);
         setPendingHandoff(null);
 
-        if (supabaseClient) {
-          setIsRealtimeEnabled(true);
-          setMessages(prev => [...prev, {
-            role: 'assistant',
-            content: `🟢 Live chat enabled. Replies from our support agent will appear here in real time.`,
-          }]);
-        } else {
-          setMessages(prev => [...prev, {
-            role: 'assistant',
-            content: `ℹ️ Ticket created, but realtime is not configured (missing Supabase client config). You'll still receive replies via email.`,
-          }]);
-        }
+        // Enable realtime silently (no extra chat messages).
+        if (supabaseClient) setIsRealtimeEnabled(true);
         
-        // Add success message to chat
+        // Add a single success message to chat
         setMessages(prev => [...prev, {
           role: 'assistant',
-          content: `✅ Support ticket created successfully!\n\n**Ticket Number:** ${data.ticketNumber}\n\nA support agent will contact you via email ${userEmail.trim()} as soon as possible.`,
+          content: `A support agent will contact you via email ${userEmail.trim()} as soon as possible.`,
         }]);
       } else {
         throw new Error(data.error || 'Failed to create ticket');

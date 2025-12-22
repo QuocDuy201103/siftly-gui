@@ -22,14 +22,14 @@ export const Siftly = (): JSX.Element => {
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
 
-          // Ẩn header khi cuộn xuống, hiện khi cuộn lên
+          // Hide header when scrolling down; show when scrolling up
           if (currentScrollY > lastScrollY.current && currentScrollY > 300) {
             setIsHeaderVisible(false);
           } else if (currentScrollY < lastScrollY.current) {
             setIsHeaderVisible(true);
           }
 
-          // Giữ header hiện khi ở đầu trang
+          // Keep header visible near the top of the page
           if (currentScrollY <= 100) {
             setIsHeaderVisible(true);
           }

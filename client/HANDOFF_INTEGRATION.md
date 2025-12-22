@@ -1,115 +1,113 @@
-# Tích Hợp Human Handoff vào ChatWidget
+# Human Handoff Integration in `ChatWidget`
 
-## ✅ Đã Hoàn Thành
+## What’s implemented
 
-### 1. Cập Nhật Interface
-- Thêm `requiresHuman` vào `Message` interface
-- Thêm các state mới để quản lý handoff flow
+### 1) Interface updates
+- Added `requiresHuman` to the `Message` interface
+- Added state for managing the handoff flow
 
-### 2. Phát Hiện Handoff
-- Tự động phát hiện khi `requiresHuman: true` trong response
-- Lưu thông tin handoff (sessionId, reason, confidence)
+### 2) Handoff detection
+- Automatically detects `requiresHuman: true` in the chat response
+- Stores handoff context: `sessionId`, `reason`, `confidence`
 
-### 3. Form Thu Thập Thông Tin
-- Form hiển thị khi cần handoff
-- Thu thập tên và email người dùng
-- Validation email format
-- UI/UX thân thiện với animations
+### 3) User info collection form
+- Shows a form when handoff is needed
+- Collects user name + email
+- Validates email format
+- Friendly UI with animations
 
-### 4. Tạo Ticket
-- Gọi API `/api/chat/handoff` khi người dùng submit form
-- Hiển thị loading state khi đang tạo ticket
-- Xử lý lỗi và hiển thị thông báo phù hợp
+### 4) Ticket creation
+- Calls `POST /api/chat/handoff` when the user submits the form
+- Shows a loading state while creating a ticket
+- Handles errors and displays clear status messages
 
-### 5. Thông Báo Kết Quả
-- Hiển thị ticket number khi tạo thành công
-- Thêm message vào chat với thông tin ticket
-- Xử lý lỗi với thông báo rõ ràng
+### 5) Result messages
+- Shows ticket number on success
+- Adds a chat message with the ticket details
+- Shows clear error messages on failure
 
-## 🎨 Tính Năng UI
+---
 
-### Form Handoff
-- **Vị trí**: Hiển thị ở cuối chat widget, trước input box
-- **Màu sắc**: Blue theme để nổi bật
-- **Validation**: 
-  - Kiểm tra email format
-  - Yêu cầu cả tên và email
+## UI behavior
+
+### Handoff form
+- **Location**: rendered at the bottom of the widget (above the input)
+- **Theme**: blue highlight to stand out
+- **Validation**:
+  - email format validation
+  - requires both name + email
 - **Buttons**:
-  - "Tạo ticket hỗ trợ" - Primary action
-  - "Bỏ qua" - Secondary action
+  - “Create support ticket” (primary)
+  - “Skip” (secondary)
 
-### Visual Indicators
-- Badge "Cần hỗ trợ từ nhân viên" trên message khi `requiresHuman: true`
-- Loading spinner khi đang tạo ticket
-- Success/Error messages rõ ràng
+### Visual indicators
+- Badge such as “Human support required” when `requiresHuman: true`
+- Loading spinner while creating a ticket
+- Clear success/error messages
 
-## 🧪 Cách Test
+---
 
-### 1. Test với Confidence Thấp
-```
-1. Mở chat widget
-2. Gửi câu hỏi không liên quan đến Siftly (ví dụ: "What is the weather?")
-3. Khi confidence < 60%, form handoff sẽ xuất hiện
-4. Điền tên và email
-5. Click "Tạo ticket hỗ trợ"
-6. Kiểm tra ticket được tạo trong Zoho Desk
-```
+## How to test
 
-### 2. Test với Từ Khóa Handoff
-```
-1. Gửi message: "Tôi muốn nói chuyện với nhân viên"
-2. Form handoff sẽ xuất hiện ngay lập tức
-3. Điền thông tin và tạo ticket
-```
+### 1) Low confidence handoff
+1. Open the chat widget
+2. Ask an unrelated question (example: “What is the weather?”)
+3. When confidence is low, the handoff form appears
+4. Fill name + email
+5. Create a ticket
+6. Verify the ticket appears in Zoho Desk
 
-### 3. Test Validation
-```
+### 2) Keyword-triggered handoff
+1. Send: “I want to talk to a human”
+2. The handoff form should appear immediately
+3. Fill info and create the ticket
+
+### 3) Validation
 1. Trigger handoff
-2. Thử submit với email không hợp lệ (ví dụ: "test@")
-3. Kiểm tra error message hiển thị
-4. Thử submit với email hợp lệ
-5. Kiểm tra ticket được tạo
-```
+2. Try submitting an invalid email (example: `test@`)
+3. Confirm the error message appears
+4. Submit a valid email
 
-### 4. Test Error Handling
-```
-1. Tạm thời tắt chat-bot server
-2. Trigger handoff và submit form
-3. Kiểm tra error message hiển thị đúng
-```
+### 4) Error handling
+1. Temporarily stop the chatbot backend
+2. Trigger handoff and submit the form
+3. Confirm the error message is shown
 
-## 🔧 Cấu Hình
+---
 
-### API Endpoint
-Mặc định: `http://localhost:3000/api/chat/handoff`
+## Configuration
 
-Nếu chat-bot chạy trên port khác, cập nhật trong `ChatWidget.tsx`:
-```typescript
-const response = await fetch('http://localhost:YOUR_PORT/api/chat/handoff', {
-  // ...
-});
-```
+### API endpoints
+The widget calls relative paths on the same origin:
+- `/api/chat`
+- `/api/chat/session`
+- `/api/chat/handoff`
+- `/api/chat/handoff/message`
 
-### Environment Variables
-Đảm bảo chat-bot server có các biến môi trường:
+In production, the main app proxies these routes to the `chat-bot` service.
+
+### Required environment variables
+For the `chat-bot` service (server-side):
 - `ZOHO_REFRESH_TOKEN`
 - `ZOHO_CLIENT_ID`
 - `ZOHO_CLIENT_SECRET`
 - `ZOHO_ORG_ID`
 - `ZOHO_DEPARTMENT_ID`
 
-### Realtime (hiển thị reply của nhân viên ngay trên web)
+### Realtime (show agent replies inside the widget)
 
-1) **Tạo bảng realtime**: chạy file `chat-bot/setup-realtime.sql` trong Supabase SQL Editor.
+1) **Create realtime table + settings**  
+Run `chat-bot/setup-realtime.sql` in Supabase SQL editor.
 
-2) **Cấu hình frontend (Vite)**: tạo `.env` (hoặc `.env.local`) ở **root project** với:
+2) **Frontend (browser) config**  
+The widget needs:
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
 
-```env
-VITE_SUPABASE_URL=https://xxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
-```
+In Cloud Run, the main app exposes `/api/public-config` so the SPA can load these at runtime.
 
-3) **Cấu hình server webhook (Next.js chat-bot)**: trong `chat-bot/.env.local` thêm:
+3) **Webhook server config (`chat-bot`)**
+In `chat-bot/.env.local`:
 
 ```env
 SUPABASE_URL=https://xxxx.supabase.co
@@ -117,56 +115,12 @@ SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 ZOHO_WEBHOOK_SECRET=your-random-secret-string
 ```
 
-4) **Zoho Desk Webhook**: trỏ webhook về endpoint:
+4) **Zoho Desk Webhook**
+Point Zoho webhook to:
 - `POST /api/zoho/webhook`
-- Header: `X-Zoho-Webhook-Secret: <ZOHO_WEBHOOK_SECRET>`
+and include:
+- Header `X-Zoho-Webhook-Secret: <ZOHO_WEBHOOK_SECRET>` (or `?secret=...`)
 
-Khi nhân viên trả lời trong Zoho Desk, webhook sẽ ghi message vào `handoff_messages` → Supabase Realtime push → ChatWidget tự hiện ngay (không reload).
+When the agent replies in Zoho Desk, webhook inserts into `handoff_messages` → Supabase Realtime pushes → the widget displays replies without a reload.
 
-## 📝 Code Structure
-
-### State Management
-```typescript
-- userName, userEmail: Thông tin người dùng
-- showHandoffForm: Hiển thị/ẩn form handoff
-- pendingHandoff: Thông tin handoff đang chờ xử lý
-- handoffStatus: Trạng thái tạo ticket (success/error)
-- isCreatingTicket: Loading state
-```
-
-### Key Functions
-- `handleCreateHandoffTicket()`: Tạo ticket trong Zoho Desk
-- `validateEmail()`: Validate email format
-- `handleSkipHandoff()`: Bỏ qua handoff
-
-## 🚀 Next Steps
-
-1. **Thu thập thông tin sớm**: Có thể thêm form đăng ký khi bắt đầu chat
-2. **Lưu thông tin**: Lưu userName và userEmail vào localStorage để tái sử dụng
-3. **Cải thiện UX**: 
-   - Auto-fill thông tin nếu đã có
-   - Remember user preferences
-   - Better error messages
-4. **Analytics**: Track handoff events để phân tích
-
-## 🐛 Troubleshooting
-
-### Form không hiển thị
-- Kiểm tra `requiresHuman: true` trong API response
-- Kiểm tra console logs
-- Đảm bảo `sessionId` được set
-
-### Ticket không được tạo
-- Kiểm tra network tab trong DevTools
-- Kiểm tra API response
-- Kiểm tra Zoho credentials trong chat-bot server
-- Xem logs trong chat-bot server console
-
-### Email validation không hoạt động
-- Kiểm tra `validateEmail()` function
-- Test với các format email khác nhau
-
----
-
-**Tích hợp hoàn tất! 🎉**
 

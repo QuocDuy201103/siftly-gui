@@ -115,13 +115,13 @@ async function testHandoff() {
     await saveChatMessage({
       sessionId,
       role: 'user',
-      content: 'Tôi muốn biết về tính năng tóm tắt email',
+      content: 'Tell me about the email summarization feature',
     });
 
     await saveChatMessage({
       sessionId,
       role: 'assistant',
-      content: 'Tính năng tóm tắt email cho phép bạn...',
+      content: 'Email summarization lets you...',
       confidence: 0.45, // Low confidence to trigger handoff
       requiresHuman: true,
     });
@@ -129,7 +129,7 @@ async function testHandoff() {
     await saveChatMessage({
       sessionId,
       role: 'user',
-      content: 'Tôi muốn nói chuyện với nhân viên',
+      content: 'I want to talk to a human support agent',
     });
 
     console.log('✅ Test messages added\n');
@@ -145,15 +145,15 @@ async function testHandoff() {
         chatHistory: [
           {
             role: 'user',
-            content: 'Tôi muốn biết về tính năng tóm tắt email',
+            content: 'Tell me about the email summarization feature',
           },
           {
             role: 'assistant',
-            content: 'Tính năng tóm tắt email cho phép bạn...',
+            content: 'Email summarization lets you...',
           },
           {
             role: 'user',
-            content: 'Tôi muốn nói chuyện với nhân viên',
+            content: 'I want to talk to a human support agent',
           },
         ],
       });

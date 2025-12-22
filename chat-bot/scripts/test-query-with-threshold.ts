@@ -20,7 +20,7 @@ async function testWithThreshold() {
     await connectDb()
     const client = getPostgresClient()
     
-    const testQuery = 'Siftly sử dụng công nghệ AI gì để xử lý email'
+    const testQuery = 'What AI technology does Siftly use to process email?'
     console.log(`\nTest query: "${testQuery}"`)
     
     const queryEmbedding = await generateEmbedding(testQuery)

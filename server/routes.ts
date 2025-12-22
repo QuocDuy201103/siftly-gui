@@ -20,7 +20,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertContactSchema.parse(req.body);
       const contact = await storage.createContact(validatedData);
       
-      // Gửi thông báo đến Slack (không block response)
+      // Send a Slack notification (do not block the HTTP response)
       sendSlackNotification(contact).catch((error) => {
         console.error("Slack notification error:", error);
       });

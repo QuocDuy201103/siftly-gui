@@ -14,9 +14,29 @@ import { generateChatCompletion, streamChatCompletion, type ChatMessage } from "
 import { saveChatMessage } from "../chat-history";
 import { getChatHistory } from "../chat-history";
 
-const CONFIDENCE_THRESHOLD = 0.35; // Minimum confidence to answer directly (lowered)
-const LOW_CONFIDENCE_THRESHOLD = 0.1; // Below this, ask for clarification (lowered to match DB filter)
-const HANDOFF_CONFIDENCE_THRESHOLD = 0.6; // Below 60% confidence, trigger handoff
+const CONFIDENCE_THRESHOLD = 0.6; // Minimum confidence to answer directly
+const LOW_CONFIDENCE_THRESHOLD = 0.55; // Below this, ask for clarification
+
+// Handoff is ONLY triggered when the user explicitly requests a human.
+// Low confidence should ask clarifying questions instead (see below).
+const HANDOFF_KEYWORDS = [
+  "human",
+  "human agent",
+  "support agent",
+  "customer support",
+  "support team",
+  "staff",
+  "staff member",
+  "representative",
+  "live agent",
+  "speak to someone",
+  "talk to a human",
+  "talk to a person",
+  "talk to staff",
+  "talk to an agent",
+  "connect me to support",
+  "connect me with support",
+] as const;
 
 export interface RAGResponse {
   response: string;
@@ -64,44 +84,18 @@ export async function generateRAGResponse(
   console.log(`🔍 Confidence Score: ${confidence}`); // Debug log
 
   // Step 2: Check for handoff triggers
-  const handoffKeywords = [
-    "nói chuyện với người",
-    "nói chuyện với nhân viên",
-    "gặp nhân viên",
-    "human",
-    "agent",
-    "support agent",
-    "speak to someone",
-    "talk to human",
-    "talk to agent",
-    "connect me with",
-    "kết nối với",
-    "chuyển cho",
-  ];
-  
   const userMessageLower = userMessage.toLowerCase();
-  const hasHandoffKeyword = handoffKeywords.some(keyword => 
+  const hasHandoffKeyword = HANDOFF_KEYWORDS.some(keyword =>
     userMessageLower.includes(keyword.toLowerCase())
   );
 
-  // Check if confidence is below handoff threshold OR user requested human
-  const shouldHandoff = confidence < HANDOFF_CONFIDENCE_THRESHOLD || hasHandoffKeyword;
-
-  if (shouldHandoff) {
+  if (hasHandoffKeyword) {
     // Trigger handoff - route to human
-    // Detect language and respond accordingly
-    const isVietnamese = /[\u00C0-\u1EF9]/.test(userMessage) || /tiếng|việt|sao|gì|nào|làm|thế/i.test(userMessage);
-    
     let handoffReason: string;
-    if (hasHandoffKeyword) {
-      handoffReason = "User requested human";
-    } else {
-      handoffReason = `Low Confidence - ${Math.round(confidence * 100)}%`;
-    }
+    handoffReason = "User requested human";
 
-    const response = isVietnamese
-      ? "Tôi hiểu bạn muốn được kết nối với nhân viên hỗ trợ. Tôi sẽ tạo ticket hỗ trợ cho bạn ngay bây giờ. Vui lòng cung cấp tên và email của bạn để chúng tôi có thể liên hệ."
-      : "I understand you'd like to speak with a human support agent. I'll create a support ticket for you right away. Please provide your name and email so we can contact you.";
+    const response =
+      "I understand you'd like to speak with a human support agent. I'll create a support ticket for you right away. Please provide your name and email so we can contact you.";
 
     const ragResponse: RAGResponse = {
       response,
@@ -257,35 +251,15 @@ export async function* streamRAGResponse(
   // Step 1: Retrieve relevant articles
   const { results, confidence } = await searchSimilarArticles(userMessage);
 
-  // Step 2: Check for handoff triggers
-  const handoffKeywords = [
-    "nói chuyện với người",
-    "nói chuyện với nhân viên",
-    "gặp nhân viên",
-    "human",
-    "agent",
-    "support agent",
-    "speak to someone",
-    "talk to human",
-    "talk to agent",
-    "connect me with",
-    "kết nối với",
-    "chuyển cho",
-  ];
-  
+  // Step 2: Check for explicit handoff triggers
   const userMessageLower = userMessage.toLowerCase();
-  const hasHandoffKeyword = handoffKeywords.some(keyword => 
+  const hasHandoffKeyword = HANDOFF_KEYWORDS.some(keyword =>
     userMessageLower.includes(keyword.toLowerCase())
   );
 
-  // Check if confidence is below handoff threshold OR user requested human
-  const shouldHandoff = confidence < HANDOFF_CONFIDENCE_THRESHOLD || hasHandoffKeyword;
-
-  if (shouldHandoff) {
-    const isVietnamese = /[\u00C0-\u1EF9]/.test(userMessage) || /tiếng|việt|sao|gì|nào|làm|thế/i.test(userMessage);
-    const response = isVietnamese
-      ? "Tôi hiểu bạn muốn được kết nối với nhân viên hỗ trợ. Tôi sẽ tạo ticket hỗ trợ cho bạn ngay bây giờ. Vui lòng cung cấp tên và email của bạn để chúng tôi có thể liên hệ."
-      : "I understand you'd like to speak with a human support agent. I'll create a support ticket for you right away. Please provide your name and email so we can contact you.";
+  if (hasHandoffKeyword) {
+    const response =
+      "I understand you'd like to speak with a human support agent. I'll create a support ticket for you right away. Please provide your name and email so we can contact you.";
 
     // Stream the response
     for (const char of response) {
@@ -486,18 +460,11 @@ function generateClarifyingQuestion(
   userMessage: string,
   results: SearchResult[]
 ): string {
-  // Detect language based on user message
-  const isVietnamese = /[\u00C0-\u1EF9]/.test(userMessage) || /tiếng|việt|sao|gì|nào|làm|thế/i.test(userMessage);
-
   if (results.length === 0) {
-    return isVietnamese
-      ? "Tôi tìm thấy một số bài viết liên quan, nhưng tôi muốn chắc chắn rằng tôi hiểu đúng câu hỏi của bạn. Bạn có thể cung cấp thêm chi tiết về những gì bạn đang tìm kiếm không?"
-      : "I found some related articles, but I want to make sure I understand your question correctly. Could you provide more details about what you're looking for?";
+    return "I found some related articles, but I want to make sure I understand your question correctly. Could you provide more details about what you're looking for?";
   }
 
   const topics = results.map(r => r.title).join(", ");
-  return isVietnamese
-    ? `Tôi tìm thấy một số bài viết có thể liên quan: ${topics}. Tuy nhiên, tôi muốn chắc chắn rằng tôi hiểu đúng câu hỏi của bạn. Bạn có thể cung cấp thêm chi tiết cụ thể về vấn đề bạn cần trợ giúp không?`
-    : `I found some articles that might be relevant: ${topics}. However, I want to make sure I understand your question correctly. Could you provide more specific details about what you need help with?`;
+  return `I found some articles that might be relevant: ${topics}. However, I want to make sure I understand your question correctly. Could you provide more specific details about what you need help with?`;
 }
 

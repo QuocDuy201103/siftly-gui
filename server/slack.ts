@@ -1,7 +1,7 @@
 import type { Contact } from "@shared/schema";
 
 /**
- * Gửi thông báo contact form đến Slack channel
+ * Send contact form notifications to a Slack channel
  */
 export async function sendSlackNotification(contact: Contact): Promise<void> {
   const webhookUrl = process.env.SLACK_WEBHOOK_URL;
@@ -79,7 +79,7 @@ export async function sendSlackNotification(contact: Contact): Promise<void> {
     console.log("Slack notification sent successfully");
   } catch (error) {
     console.error("Failed to send Slack notification:", error);
-    // Không throw error để không ảnh hưởng đến việc save database
-    // Chỉ log error để debug
+    // Do not throw so we don't affect saving to the database.
+    // Logging is enough for debugging.
   }
 }

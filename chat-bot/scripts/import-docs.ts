@@ -26,7 +26,7 @@ if (!process.env.DATABASE_URL) {
 
 import { connectDb } from '../lib/db'
 import { helpArticles } from '../../shared/schema'
-import { eq, sql } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
 
 interface Article {
   title: string
@@ -39,7 +39,7 @@ function parseDocsFile(content: string): Article[] {
   const articles: Article[] = []
   const lines = content.split('\n')
   
-  let currentSection = 'Tài liệu Trợ giúp'
+  let currentSection = 'Help Docs'
   let currentTitle = ''
   let currentContent: string[] = []
   let inArticle = false
@@ -64,7 +64,7 @@ function parseDocsFile(content: string): Article[] {
       const sectionMatch = line.match(/^[IVX]+\.\s+(.+)/)
       if (sectionMatch) {
         currentSection = sectionMatch[1].trim()
-        inFAQSection = currentSection.includes('FAQ') || currentSection.includes('Câu hỏi')
+        inFAQSection = currentSection.includes('FAQ')
       }
       
       currentTitle = ''
@@ -80,8 +80,8 @@ function parseDocsFile(content: string): Article[] {
       }
     }
     
-    // Detect numbered articles (1., 2., 3., 4.) - these are help articles
-    if (line.match(/^\d+\.\s+/)) {
+    // Detect numbered articles (1., 2., 3.) or (1), 2) - these are help articles
+    if (line.match(/^\d+[\.\)]\s+/)) {
       // Save previous article
       if (currentTitle && currentContent.length > 0) {
         articles.push({
@@ -93,7 +93,7 @@ function parseDocsFile(content: string): Article[] {
       }
       
       // Extract title
-      const titleMatch = line.match(/^\d+\.\s+(.+)/)
+      const titleMatch = line.match(/^\d+[\.\)]\s+(.+)/)
       if (titleMatch) {
         currentTitle = titleMatch[1].trim()
         currentContent = []
@@ -138,6 +138,8 @@ function generateUrl(title: string): string {
 
 async function importDocs() {
   try {
+    const replaceMode = process.argv.includes('--replace') || process.env.REPLACE_DOCS === '1'
+
     console.log('Connecting to database...')
     const db = await connectDb()
     
@@ -158,9 +160,32 @@ async function importDocs() {
     })
     
     console.log(`\nImporting articles...\n`)
+
+    // Replace mode: remove previously imported docs (generated URLs) so a language/title change
+    // doesn't leave old docs behind.
+    if (replaceMode) {
+      console.log('🧹 Replace mode enabled: removing previously imported docs (url starts with https://siftly.com/help/)...')
+
+      // Delete embeddings first (FK / large table)
+      await db.execute(sql`
+        delete from article_embeddings
+        where article_id in (
+          select id from help_articles where url like 'https://siftly.com/help/%'
+        )
+      `)
+
+      // Delete the help articles imported by this script
+      await db.execute(sql`
+        delete from help_articles
+        where url like 'https://siftly.com/help/%'
+      `)
+
+      console.log('✓ Previous docs removed.\n')
+    }
     
     // Import each article
     let imported = 0
+    let updated = 0
     let skipped = 0
     
     for (const article of articles) {
@@ -171,8 +196,22 @@ async function importDocs() {
       
       const existing = (existingResult as any).rows || []
       if (existing.length > 0) {
-        console.log(`⏭️  Skipping "${article.title}" - already exists`)
-        skipped++
+        // Update existing article content + metadata, then clear embeddings so they can be regenerated
+        const existingId = existing[0]?.id
+
+        await db.execute(sql`
+          update help_articles
+          set content = ${article.content},
+              url = ${article.url},
+              category = ${article.category},
+              updated_at = now()
+          where id = ${existingId}
+        `)
+
+        await db.execute(sql`delete from article_embeddings where article_id = ${existingId}`)
+
+        console.log(`↻ Updated: ${article.title} (ID: ${existingId})`)
+        updated++
         continue
       }
       
@@ -203,8 +242,9 @@ async function importDocs() {
     
     console.log(`\n✅ Import complete!`)
     console.log(`   Imported: ${imported}`)
+    console.log(`   Updated: ${updated}`)
     console.log(`   Skipped: ${skipped}`)
-    console.log(`\nNext step: Run create-embeddings.ts to generate embeddings`)
+    console.log(`\nNext step: Run create-embeddings.ts to generate embeddings (required if you updated/replaced docs)`)
   } catch (error: any) {
     console.error('Error importing docs:', error.message || error)
     process.exit(1)

@@ -20,7 +20,7 @@ async function testQuery() {
     console.log('Connecting to database...')
     await connectDb()
     
-    const testQuery = 'Siftly sử dụng công nghệ AI gì để xử lý email'
+    const testQuery = 'What AI technology does Siftly use to process email?'
     console.log(`\nTest query: "${testQuery}"`)
     console.log('Generating embedding...')
     

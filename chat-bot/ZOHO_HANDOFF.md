@@ -1,59 +1,59 @@
-# Hướng Dẫn Tích Hợp Human Handoff với Zoho Desk
+# Zoho Desk Human Handoff Guide
 
-## Tổng Quan
+## Overview
 
-Tính năng Human Handoff tự động chuyển giao cuộc trò chuyện từ chatbot sang nhân viên CSKH trong Zoho Desk khi:
+Human handoff automatically routes a conversation from the chatbot to a Zoho Desk agent when:
 
-1. **Độ tin cậy thấp**: Confidence score < 60%
-2. **Người dùng yêu cầu**: Câu hỏi chứa từ khóa như:
-   - "nói chuyện với người"
-   - "nói chuyện với nhân viên"
-   - "gặp nhân viên"
-   - "human", "agent", "support agent"
-   - "speak to someone", "talk to human"
-   - "kết nối với", "chuyển cho"
+1. **Low confidence**: confidence score < 60%
+2. **User requests a human**: the message contains keywords like:
+   - “talk to a human”, “agent”, “support”
+   - “speak to someone”
 
-## Quy Trình Handoff
+## Handoff flow
 
-### Bước 1: Phát Hiện Trigger
+### Step 1: Trigger detection
 
-Khi chatbot nhận được câu hỏi:
-- RAG pipeline tính toán confidence score
-- Kiểm tra từ khóa handoff trong câu hỏi
-- Nếu confidence < 60% HOẶC có từ khóa → Trigger handoff
+When a user message arrives:
+- The RAG pipeline computes confidence
+- Keywords are checked
+- If confidence < 60% OR a keyword matches → trigger handoff
 
-### Bước 2: Thu Thập Thông Tin
+### Step 2: Collect user info
 
-Hệ thống tự động thu thập:
-- **Thông tin người dùng**: Tên, email (nếu có)
-- **Lý do handoff**: "Low Confidence - 52%" hoặc "User requested human"
-- **Lịch sử chat**: 5-10 tin nhắn cuối cùng
+The system collects:
+- user name + email (if provided)
+- handoff reason
+- recent chat history context
 
-### Bước 3: Tạo Ticket trong Zoho Desk
+### Step 3: Create a Zoho Desk ticket
 
-API `/api/chat/handoff` sẽ:
-1. Kiểm tra xem đã có ticket cho session này chưa
-2. Cập nhật thông tin người dùng vào session
-3. Lấy lịch sử chat
-4. Tạo ticket trong Zoho Desk với đầy đủ context
+`POST /api/chat/handoff`:
+1. Checks if a ticket already exists for the session
+2. Updates session user info
+3. Loads chat history
+4. Creates a Zoho Desk ticket with full context
 
-## API Endpoints
+---
+
+## API endpoints
 
 ### POST `/api/chat/handoff`
 
-Tạo ticket handoff trong Zoho Desk.
+Creates a Zoho Desk ticket.
 
-**Request Body:**
+**Request:**
+
 ```json
 {
   "sessionId": "uuid-of-session",
-  "userName": "Nguyễn Văn A", // Optional
-  "userEmail": "user@example.com", // Optional
-  "handoffReason": "Low Confidence - 52%" // Optional, tự động detect nếu không có
+  "userName": "Jane Doe",
+  "userEmail": "user@example.com",
+  "handoffReason": "Low Confidence - 52%"
 }
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -63,7 +63,8 @@ Tạo ticket handoff trong Zoho Desk.
 }
 ```
 
-**Nếu ticket đã tồn tại:**
+If the ticket already exists:
+
 ```json
 {
   "success": true,
@@ -73,136 +74,61 @@ Tạo ticket handoff trong Zoho Desk.
 }
 ```
 
-### POST `/api/chat`
+---
 
-API chat thông thường, hỗ trợ thêm tham số:
+## Zoho configuration
 
-**Request Body:**
-```json
-{
-  "message": "Câu hỏi của người dùng",
-  "sessionId": "uuid-of-session", // Optional
-  "userId": "user-id", // Optional
-  "userName": "Nguyễn Văn A", // Optional - thu thập thông tin người dùng
-  "userEmail": "user@example.com" // Optional - thu thập thông tin người dùng
-}
-```
-
-## Cấu Hình Zoho Desk
-
-Xem chi tiết trong [ENV_SETUP.md](./ENV_SETUP.md#4-zoho-desk-api-credentials)
-
-### Biến Môi Trường Cần Thiết:
+See `ENV_SETUP.md` for required variables. At minimum:
 
 ```env
 ZOHO_ACCOUNTS_URL=https://accounts.zoho.com
 ZOHO_DESK_API_URL=https://desk.zoho.com/api/v1
-ZOHO_ORG_ID=your-org-id
-ZOHO_CLIENT_ID=your-client-id
-ZOHO_CLIENT_SECRET=your-client-secret
-ZOHO_REFRESH_TOKEN=your-refresh-token
+ZOHO_ORG_ID=...
+ZOHO_CLIENT_ID=...
+ZOHO_CLIENT_SECRET=...
+ZOHO_REFRESH_TOKEN=...
+ZOHO_DEPARTMENT_ID=...
 ```
 
-## Quản Lý OAuth Tokens
+## OAuth token handling
 
-### Tự Động Refresh Token
+- Access tokens are short-lived
+- The system refreshes tokens automatically using the refresh token
+- Tokens are stored in DB tables like `zoho_tokens`
 
-Hệ thống tự động quản lý OAuth tokens:
-- Access Token có hiệu lực 1 giờ
-- Tự động refresh khi token hết hạn
-- Lưu trữ an toàn trong database
-- Sử dụng Refresh Token để lấy Access Token mới
+---
 
-### Lưu Trữ Tokens
+## Realtime agent replies inside the web widget
 
-Tokens được lưu trong bảng `zoho_tokens`:
-- `access_token`: Token hiện tại (tự động refresh)
-- `refresh_token`: Token để refresh (từ environment variable)
-- `expires_at`: Thời gian hết hạn
+When an agent replies in Zoho Desk, Zoho should call:
 
-⚠️ **Lưu ý**: Trong production, nên mã hóa tokens trước khi lưu vào database.
+- `POST /api/zoho/webhook`
 
-## Cấu Trúc Database
+The webhook inserts into Supabase table `handoff_messages` with:
+- `session_id`
+- `author_type = "agent"`
+- `content`
 
-### Bảng `chat_sessions` (đã cập nhật)
-- `user_name`: Tên người dùng
-- `user_email`: Email người dùng
+The web widget subscribes (Supabase Realtime) to new rows and shows the reply instantly.
 
-### Bảng `zoho_tokens` (mới)
-- Lưu trữ OAuth tokens
-- Tự động refresh khi cần
+### Webhook security (optional)
 
-### Bảng `zoho_tickets` (mới)
-- Theo dõi các ticket đã tạo
-- Liên kết với `chat_sessions`
+Set:
 
-## Ví Dụ Sử Dụng
-
-### Frontend Integration
-
-```typescript
-// Khi chatbot trả về requiresHuman: true
-if (response.requiresHuman) {
-  // Thu thập thông tin người dùng
-  const userName = prompt("Vui lòng nhập tên của bạn:");
-  const userEmail = prompt("Vui lòng nhập email của bạn:");
-  
-  // Gọi API handoff
-  const handoffResponse = await fetch('/api/chat/handoff', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      sessionId: currentSessionId,
-      userName,
-      userEmail,
-      handoffReason: `Low Confidence - ${Math.round(response.confidence * 100)}%`
-    })
-  });
-  
-  const result = await handoffResponse.json();
-  if (result.success) {
-    alert(`Ticket đã được tạo: ${result.ticketNumber}`);
-  }
-}
+```env
+ZOHO_WEBHOOK_SECRET=your-random-secret-string
 ```
+
+Then Zoho must send:
+- Header `X-Zoho-Webhook-Secret: <ZOHO_WEBHOOK_SECRET>`, or
+- Query param `?secret=<ZOHO_WEBHOOK_SECRET>`
+
+---
 
 ## Troubleshooting
 
-### Lỗi: "Zoho refresh token is not configured"
-→ Kiểm tra `ZOHO_REFRESH_TOKEN` trong `.env.local`
+- **“Zoho refresh token is not configured”**: set `ZOHO_REFRESH_TOKEN`.
+- **“Failed to refresh Zoho token”**: verify refresh token, client id/secret, scopes.
+- **Ticket creation fails**: ensure `Desk.tickets.CREATE` scope and correct org/department IDs.
 
-### Lỗi: "Failed to refresh Zoho token"
-→ Kiểm tra:
-- Refresh token có còn hợp lệ không
-- Client ID và Secret có đúng không
-- Zoho API có đang hoạt động không
-
-### Lỗi: "Failed to create Zoho ticket"
-→ Kiểm tra:
-- Organization ID có đúng không
-- Access token có hợp lệ không
-- Quyền API có đủ không (Desk.tickets.CREATE)
-
-### Ticket không được tạo
-→ Kiểm tra:
-- Logs trong console để xem chi tiết lỗi
-- Zoho Desk API có đang hoạt động không
-- Email trong ticket data có hợp lệ không (Zoho yêu cầu email)
-
-## Best Practices
-
-1. **Thu thập thông tin sớm**: Hỏi tên và email người dùng ngay từ đầu chat
-2. **Xử lý lỗi gracefully**: Nếu không tạo được ticket, vẫn thông báo cho người dùng
-3. **Theo dõi tickets**: Sử dụng bảng `zoho_tickets` để theo dõi các handoff
-4. **Bảo mật tokens**: Trong production, mã hóa tokens trước khi lưu
-5. **Test thường xuyên**: Kiểm tra refresh token mechanism định kỳ
-
-## Security Notes
-
-⚠️ **QUAN TRỌNG**:
-- **KHÔNG** commit refresh token vào Git
-- **KHÔNG** log access tokens
-- Mã hóa tokens trong production
-- Sử dụng HTTPS cho tất cả API calls
-- Giới hạn quyền API chỉ những gì cần thiết
 

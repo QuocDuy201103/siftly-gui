@@ -66,7 +66,7 @@ export default function Home() {
       console.error('Chat error:', error)
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: `Lỗi: ${error.message || 'Không thể kết nối đến server'}`,
+        content: `Error: ${error.message || 'Unable to connect to the server'}`,
       }])
     } finally {
       setIsLoading(false)
@@ -79,7 +79,7 @@ export default function Home() {
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <h1>Siftly RAG Chatbot</h1>
-          <p>Hỏi đáp về Siftly với AI</p>
+          <p>Ask questions about Siftly with AI</p>
         </div>
       </header>
 
@@ -87,8 +87,8 @@ export default function Home() {
       <main className={styles.main}>
         {messages.length === 0 && (
           <div className={styles.welcome}>
-            <p>Chào mừng đến với Siftly Chatbot!</p>
-            <p>Hãy đặt câu hỏi về các tính năng của Siftly</p>
+            <p>Welcome to the Siftly Chatbot!</p>
+            <p>Ask questions about Siftly features</p>
           </div>
         )}
 
@@ -108,7 +108,7 @@ export default function Home() {
               
               {msg.sources && msg.sources.length > 0 && (
                 <div className={styles.sources}>
-                  <p className={styles.sourcesTitle}>Nguồn tham khảo:</p>
+                  <p className={styles.sourcesTitle}>Sources:</p>
                   <ul>
                     {msg.sources.map((source, i) => (
                       <li key={i}>
@@ -153,7 +153,7 @@ export default function Home() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            placeholder="Nhập câu hỏi của bạn..."
+            placeholder="Type your question..."
             disabled={isLoading}
             className={styles.input}
           />
@@ -162,7 +162,7 @@ export default function Home() {
             disabled={isLoading || !input.trim()}
             className={styles.button}
           >
-            {isLoading ? 'Đang gửi...' : 'Gửi'}
+            {isLoading ? 'Sending...' : 'Send'}
           </button>
         </div>
       </footer>

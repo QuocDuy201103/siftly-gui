@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Siftly RAG Chatbot',
-  description: 'RAG Chatbot với Supabase và DeepSeek AI',
+  description: 'RAG chatbot with Supabase and DeepSeek',
 }
 
 export default function RootLayout({
@@ -12,7 +12,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="vi">
+    <html lang="en">
       <body>{children}</body>
     </html>
   )
