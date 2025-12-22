@@ -1,0 +1,21 @@
+# GCP upload ignore (Cloud Build / gcloud builds submit)
+
+**/node_modules/**
+**/.next/**
+**/dist/**
+**/.turbo/**
+**/.cache/**
+**/.DS_Store
+
+# Local env / secrets
+**/.env
+**/.env.*
+
+# Cursor / IDE
+**/.cursor/**
+**/.vscode/**
+
+# Logs
+**/*.log
+
+

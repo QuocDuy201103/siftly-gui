@@ -1,0 +1,39 @@
+FROM node:20-bookworm-slim AS deps
+
+WORKDIR /app/chat-bot
+
+# Install dependencies first (better layer caching)
+COPY chat-bot/package.json chat-bot/package-lock.json ./
+RUN npm ci
+
+# Copy app + shared code (chat-bot imports ../../shared/*)
+WORKDIR /app
+COPY shared ./shared
+COPY chat-bot ./chat-bot
+
+WORKDIR /app/chat-bot
+# Make dependencies visible to ../shared/* during Next build:
+# Node resolution from /app/shared will look for /app/node_modules, not /app/chat-bot/node_modules.
+RUN if [ ! -e /app/node_modules ]; then ln -s /app/chat-bot/node_modules /app/node_modules; fi
+RUN npm run build
+
+
+FROM node:20-bookworm-slim AS runner
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+WORKDIR /app
+
+# Copy built app and dependencies
+COPY --from=deps /app/chat-bot /app/chat-bot
+COPY --from=deps /app/shared /app/shared
+
+WORKDIR /app/chat-bot
+
+EXPOSE 8080
+
+# Cloud Run provides PORT; Next needs -p to bind to it.
+CMD ["sh","-c","node node_modules/next/dist/bin/next start -p ${PORT:-8080}"]
+
+

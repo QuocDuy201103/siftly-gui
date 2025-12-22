@@ -1,0 +1,13 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - Dockerfile.chat-bot
+      - -t
+      - ${_IMAGE}
+      - .
+images:
+  - ${_IMAGE}
+
+

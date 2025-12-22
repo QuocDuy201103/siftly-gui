@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Loader2, ExternalLink, User, Mail, CheckCircle, AlertCircle, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 
 interface Message {
   role: 'user' | 'assistant' | 'agent';
@@ -26,6 +26,7 @@ export function ChatWidget() {
   const [handoffStatus, setHandoffStatus] = useState<{ success: boolean; ticketNumber?: string; message: string } | null>(null);
   const [isCreatingTicket, setIsCreatingTicket] = useState(false);
   const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(false);
+  const [supabaseClient, setSupabaseClient] = useState<any>(null);
   const [handoffTicketId, setHandoffTicketId] = useState<string | null>(null);
   const [hasChosenQuickOption, setHasChosenQuickOption] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -45,6 +46,27 @@ export function ChatWidget() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Initialize Supabase client (prefers build-time VITE_*, falls back to /api/public-config at runtime)
+  useEffect(() => {
+    let cancelled = false;
+    getSupabaseClient().then((client) => {
+      if (cancelled) return;
+      setSupabaseClient(client);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // If user already has an existing handoff ticket/session (e.g. after refresh),
+  // automatically re-enable realtime so agent replies show up in the widget.
+  useEffect(() => {
+    if (!supabaseClient) return;
+    if (!sessionId) return;
+    if (!handoffTicketId) return;
+    setIsRealtimeEnabled(true);
+  }, [supabaseClient, sessionId, handoffTicketId]);
 
   // Restore session/handoff state so user doesn't see the ticket UI again after first creation.
   useEffect(() => {
@@ -90,7 +112,7 @@ export function ChatWidget() {
   useEffect(() => {
     if (!isRealtimeEnabled) return;
     if (!sessionId) return;
-    const s = supabase;
+    const s = supabaseClient;
     if (!s) return;
 
     const channel = s
@@ -116,7 +138,7 @@ export function ChatWidget() {
     return () => {
       s.removeChannel(channel);
     };
-  }, [isRealtimeEnabled, sessionId]);
+  }, [isRealtimeEnabled, sessionId, supabaseClient]);
 
   const isInHandoffMode = Boolean(handoffTicketId);
 
@@ -152,7 +174,7 @@ export function ChatWidget() {
     setMessages(prev => [...prev, { role: 'user', content: message }]);
 
     try {
-      const response = await fetch('http://localhost:3000/api/chat', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, sessionId }),
@@ -201,7 +223,7 @@ export function ChatWidget() {
     try {
       // If we're already in handoff mode, send messages directly to Zoho ticket (no more ticket UI).
       if (isInHandoffMode && sessionId) {
-        const response = await fetch('http://localhost:3000/api/chat/handoff/message', {
+        const response = await fetch('/api/chat/handoff/message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -233,7 +255,7 @@ export function ChatWidget() {
       // New behavior: if user didn't choose a quick option and typed a custom question, trigger handoff.
       if (!hasChosenQuickOption) {
         // Create session + save first user message for context, then ask for contact info (one-time)
-        const sessionRes = await fetch('http://localhost:3000/api/chat/session', {
+        const sessionRes = await fetch('/api/chat/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -262,7 +284,7 @@ export function ChatWidget() {
       }
 
       // Assuming chat-bot server is running on localhost:3000
-      const response = await fetch('http://localhost:3000/api/chat', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -335,7 +357,7 @@ export function ChatWidget() {
     setHandoffStatus(null);
 
     try {
-      const response = await fetch('http://localhost:3000/api/chat/handoff', {
+      const response = await fetch('/api/chat/handoff', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -362,7 +384,7 @@ export function ChatWidget() {
         setHandoffTicketId(data.ticketId || null);
         setPendingHandoff(null);
 
-        if (isSupabaseConfigured()) {
+        if (supabaseClient) {
           setIsRealtimeEnabled(true);
           setMessages(prev => [...prev, {
             role: 'assistant',
@@ -371,7 +393,7 @@ export function ChatWidget() {
         } else {
           setMessages(prev => [...prev, {
             role: 'assistant',
-            content: `ℹ️ Ticket created, but realtime is not configured (missing Supabase env vars). You'll still receive replies via email.`,
+            content: `ℹ️ Ticket created, but realtime is not configured (missing Supabase client config). You'll still receive replies via email.`,
           }]);
         }
         

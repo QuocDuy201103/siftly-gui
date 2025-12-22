@@ -4,6 +4,8 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '2mb',
     },
+    // Allows importing from outside the Next.js app directory (we import ../../shared/*)
+    externalDir: true,
   },
   async rewrites() {
     // Serve built client (copied into public) for all non-API routes
