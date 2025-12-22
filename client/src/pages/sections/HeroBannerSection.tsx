@@ -36,12 +36,18 @@ export const HeroBannerSection = (): JSX.Element => {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 translate-x-[71px] md:translate-x-[100px] lg:translate-x-[142px] w-[350px] h-[350px] md:w-[500px] md:h-[500px] lg:w-[696px] lg:h-[696px] bg-[#1d71c5] rounded-[347.85px/347.79px] blur-[250px]" />
 
         <img
-          className="hidden md:block absolute w-auto h-auto max-w-[80%] md:max-w-[85%] lg:max-w-full max-h-[60%] md:max-h-[75%] lg:max-h-[95%] top-[5.47%] left-1/2 -translate-x-1/2"
+          className="hidden md:block absolute w-auto h-auto max-w-[80%] md:max-w-[85%] lg:max-w-full max-h-[60%] md:max-h-[75%] lg:max-h-[95%] top-[5.47%] left-1/2 -translate-x-1/2 z-10 pointer-events-none select-none"
+          alt="Email background"
+          src="/figmaAssets/Group 98.png"
+        />
+
+        <img
+          className="hidden md:block absolute w-auto h-auto max-w-[80%] md:max-w-[85%] lg:max-w-full max-h-[60%] md:max-h-[75%] lg:max-h-[95%] top-[5.47%] left-1/2 -translate-x-1/2 z-0 pointer-events-none select-none"
           alt="Letter"
           src="/figmaAssets/letter.png"
         />
 
-        <div className="absolute top-[120px] md:top-[240px] lg:top-[290px] left-1/2 -translate-x-1/2 flex flex-col items-center justify-center gap-4 md:gap-6 lg:gap-7 px-4">
+        <div className="absolute top-[120px] md:top-[240px] lg:top-[310px] left-1/2 -translate-x-1/2 flex flex-col items-center justify-center gap-4 md:gap-6 lg:gap-7 px-4">
           <div className="flex flex-col items-center gap-3 md:gap-4 w-full">
             <div className="flex flex-col items-center w-full">
               <h1 className="text-white text-3xl md:text-4xl lg:text-6xl leading-[36px] md:leading-[48px] lg:leading-[72.0px] whitespace-nowrap [font-family:'Montserrat',Helvetica] font-bold text-center tracking-[0]">

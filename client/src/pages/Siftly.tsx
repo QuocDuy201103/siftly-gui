@@ -49,7 +49,7 @@ export const Siftly = (): JSX.Element => {
   return (
     <div className="bg-[#001429] w-full min-h-screen relative overflow-x-hidden">
       <img
-        className="hidden lg:block absolute top-[1660px] left-0 w-[490px] h-[798px] pointer-events-none"
+        className="hidden lg:block absolute top-[1300px] left-1/2 -translate-x-1/2 w-[800px] h-[820px] pointer-events-none"
         alt="Decor"
         src="/figmaAssets/decor.png"
       />
@@ -118,7 +118,7 @@ export const Siftly = (): JSX.Element => {
           <img
             src="/figmaAssets/s.png"
             alt="Siftly Logo"
-            className="w-full max-w-[90%] md:max-w-[600px] lg:w-[700px] h-auto object-contain mt-20 md:mt-32 lg:mt-40 mb-16 md:mb-24 lg:mb-32"
+            className="w-full max-w-[90%] md:max-w-[700px] lg:w-[700px] h-auto object-contain mt-20 md:mt-32 lg:mt-40 mb-16 md:mb-24 lg:mb-2"
           />
         </div>
         <OverviewSection />
