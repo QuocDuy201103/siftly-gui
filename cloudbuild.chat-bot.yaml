@@ -1,4 +1,5 @@
 steps:
+  # Build Docker image for chat-bot
   - name: gcr.io/cloud-builders/docker
     args:
       - build
@@ -7,7 +8,30 @@ steps:
       - -t
       - ${_IMAGE}
       - .
+    id: build-chat-bot
+
+  # Deploy to Cloud Run
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE_NAME}
+      - --image
+      - ${_IMAGE}
+      - --region
+      - ${_REGION}
+      - --allow-unauthenticated
+      - --set-env-vars
+      - NODE_ENV=production,NEXT_TELEMETRY_DISABLED=1
+      - --set-secrets
+      - DATABASE_URL=DATABASE_URL:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest,SUPABASE_URL=SUPABASE_URL:latest,VITE_SUPABASE_URL=VITE_SUPABASE_URL:latest,VITE_SUPABASE_ANON_KEY=VITE_SUPABASE_ANON_KEY:latest,DEEPSEEK_API_KEY=DEEPSEEK_API_KEY:latest,DEEPSEEK_API_URL=DEEPSEEK_API_URL:latest,HUGGINGFACE_API_KEY=HUGGINGFACE_API_KEY:latest,HUGGINGFACE_EMBEDDING_MODEL=HUGGINGFACE_EMBEDDING_MODEL:latest,HUGGINGFACE_API_URL=HUGGINGFACE_API_URL:latest,EMBEDDING_DIMENSIONS=EMBEDDING_DIMENSIONS:latest,ZOHO_ACCOUNTS_URL=ZOHO_ACCOUNTS_URL:latest,ZOHO_DESK_API_URL=ZOHO_DESK_API_URL:latest,ZOHO_ORG_ID=ZOHO_ORG_ID:latest,ZOHO_CLIENT_ID=ZOHO_CLIENT_ID:latest,ZOHO_CLIENT_SECRET=ZOHO_CLIENT_SECRET:latest,ZOHO_REFRESH_TOKEN=ZOHO_REFRESH_TOKEN:latest,ZOHO_DEPARTMENT_ID=ZOHO_DEPARTMENT_ID:latest,ZOHO_WEBHOOK_SECRET=ZOHO_WEBHOOK_SECRET:latest
+    id: deploy-chat-bot
+
 images:
   - ${_IMAGE}
+
+options:
+  logging: CLOUD_LOGGING_ONLY
 
 
