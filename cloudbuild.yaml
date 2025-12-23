@@ -18,7 +18,7 @@ steps:
     id: push-main-app
     waitFor: ['build-main-app']
 
-  # Deploy to Cloud Run
+  # Deploy to Cloud Run (wait for push to complete)
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
     args:
@@ -37,6 +37,9 @@ steps:
     id: deploy-main-app
     waitFor: ['push-main-app']
 
+# Images section - Cloud Build will automatically push images listed here
+# after all steps complete, but we use explicit push step above to ensure
+# image is available before deployment
 images:
   - ${_IMAGE}
 
