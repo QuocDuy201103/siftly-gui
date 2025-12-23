@@ -10,6 +10,14 @@ steps:
       - .
     id: build-main-app
 
+  # Push image to Artifact Registry (explicit push)
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_IMAGE}
+    id: push-main-app
+    waitFor: ['build-main-app']
+
   # Deploy to Cloud Run
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
@@ -27,6 +35,7 @@ steps:
       - --set-secrets
       - DATABASE_URL=DATABASE_URL:latest,VITE_SUPABASE_URL=VITE_SUPABASE_URL:latest,VITE_SUPABASE_ANON_KEY=VITE_SUPABASE_ANON_KEY:latest,SLACK_WEBHOOK_URL=SLACK_WEBHOOK_URL:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest,GOOGLE_CALLBACK_URL=GOOGLE_CALLBACK_URL:latest,ALLOWED_ADMIN_EMAILS=ALLOWED_ADMIN_EMAILS:latest
     id: deploy-main-app
+    waitFor: ['push-main-app']
 
 images:
   - ${_IMAGE}
