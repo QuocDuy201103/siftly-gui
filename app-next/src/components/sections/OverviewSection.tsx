@@ -1,5 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
-import React from "react";
+
 import { Card, CardContent } from "@/components/ui/card";
 
 const features = [
@@ -47,7 +46,7 @@ const features = [
   },
 ];
 
-export const OverviewSection = (): JSX.Element => {
+export const OverviewSection = () => {
   return (
     <section className="flex flex-col w-full items-center gap-12 md:gap-16 lg:gap-[100px] py-12 md:py-16 lg:py-20 px-4 md:px-4">
       <div className="flex flex-col max-w-[597px] items-center gap-4 md:gap-5 w-full px-2 md:px-0">

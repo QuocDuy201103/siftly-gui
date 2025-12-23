@@ -1,8 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
-import React from "react";
+
+
+import { ReactNode, Fragment } from "react";
+
 
 type BenefitItem = {
-  content: React.ReactNode;
+  content: ReactNode;
   hasShadow?: boolean;
 };
 
@@ -136,7 +138,7 @@ const rightBenefits: BenefitItem[] = [
   },
 ];
 
-export const EasySetupSection = (): JSX.Element => {
+export const EasySetupSection = () => {
   return (
     <section className="flex flex-col w-full max-w-[1000px] mx-auto items-center gap-12 md:gap-16 lg:gap-[100px] mt-12 md:mt-16 lg:mt-20 px-4">
       <header className="flex flex-col w-full max-w-[512px] items-center gap-4 md:gap-5">
@@ -158,7 +160,7 @@ export const EasySetupSection = (): JSX.Element => {
 
       <div className="flex items-center gap-4 md:gap-6 w-full flex-col lg:flex-row">
         {setupSteps.map((step, index) => (
-          <React.Fragment key={index}>
+          <Fragment key={index}>
             <article className="flex flex-col w-full md:w-56 lg:w-60 items-center gap-6 md:gap-9">
               <img
                 className="w-[56px] h-[56px] md:w-[66px] md:h-[66px]"
@@ -188,7 +190,7 @@ export const EasySetupSection = (): JSX.Element => {
                 }
               />
             )}
-          </React.Fragment>
+          </Fragment>
         ))}
       </div>
 

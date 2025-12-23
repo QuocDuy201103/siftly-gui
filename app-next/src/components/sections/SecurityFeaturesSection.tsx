@@ -1,5 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
-import React from "react";
+
 import { Card, CardContent } from "@/components/ui/card";
 
 const securityFeatures = [
@@ -23,7 +22,7 @@ const securityFeatures = [
   },
 ];
 
-export const SecurityFeaturesSection = (): JSX.Element => {
+export const SecurityFeaturesSection = () => {
   return (
     <section className="flex flex-col w-full items-center gap-6 md:gap-8 lg:gap-9 py-8 md:py-10 lg:py-12 px-4">
       <div className="inline-flex flex-col items-center gap-4 md:gap-5 relative flex-[0_0_auto] w-full">

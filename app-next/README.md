@@ -1,90 +1,36 @@
-## Siftly Next.js App — Deploy Guide (Cloud Run)
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-### 1) Env & Secrets
-Create `app-next/.env.local` for local dev (do not commit):
-```
-DATABASE_URL=...
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
-NEXTAUTH_SECRET=...                # 32 bytes base64
-NEXTAUTH_URL=https://<your-web-url>
-ALLOWED_ADMIN_EMAILS=admin@example.com
-SLACK_WEBHOOK_URL=...
-CHATBOT_BASE_URL=https://<chat-bot-url> # or http://localhost:4000 in dev
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-```
-Generate `NEXTAUTH_SECRET` (PowerShell):
-```
-[System.Convert]::ToBase64String((1..32 | ForEach-Object {Get-Random -Max 256}))
-```
+## Getting Started
 
-### 2) Local Dev
-```
-cd app-next
-npm install
+First, run the development server:
+
+```bash
 npm run dev
-```
-If using chatbot locally, run it on port 4000 and set `CHATBOT_BASE_URL=http://localhost:4000`.
-
-### 3) Build (local)
-```
-cd app-next
-npm run build
-```
-
-### 4) Docker (standalone Next)
-Example Dockerfile (root-based, copies shared schemas):
-```Dockerfile
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY app-next/package*.json ./app-next/
-RUN cd app-next && npm ci
-COPY app-next ./app-next
-COPY shared ./shared
-WORKDIR /app/app-next
-RUN npm run build
-
-FROM node:20-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=builder /app/app-next/.next/standalone ./
-COPY --from=builder /app/app-next/.next/static ./.next/static
-COPY --from=builder /app/app-next/public ./public
-EXPOSE 3000
-CMD ["node", "server.js"]
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-### 5) Cloud Build (example)
-Substitutions:
-- `_IMAGE`: `<region>-docker.pkg.dev/<project>/siftly/app-next:latest`
-- `_SERVICE_NAME`: `siftly-web`
-- `_REGION`: e.g. `asia-southeast1`
-- `_CHATBOT_BASE_URL`: deployed chatbot URL
-- `_NEXTAUTH_URL`: https://<your-web-url>
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Deploy with secrets:
-```
-gcloud builds submit --config cloudbuild.yaml --substitutions "_IMAGE=$IMAGE,_SERVICE_NAME=$SERVICE,_REGION=$REGION,_CHATBOT_BASE_URL=$CHATBOT_URL,_NEXTAUTH_URL=$WEB_URL" .
-```
-Then (if not deployed in build step):
-```
-gcloud run deploy $SERVICE \
-  --image $IMAGE \
-  --region $REGION \
-  --allow-unauthenticated \
-  --set-env-vars "NODE_ENV=production,CHATBOT_BASE_URL=$CHATBOT_URL,NEXTAUTH_URL=$WEB_URL" \
-  --set-secrets "DATABASE_URL=DATABASE_URL:latest,SLACK_WEBHOOK_URL=SLACK_WEBHOOK_URL:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest,ALLOWED_ADMIN_EMAILS=ALLOWED_ADMIN_EMAILS:latest,NEXTAUTH_SECRET=NEXTAUTH_SECRET:latest,NEXT_PUBLIC_SUPABASE_URL=NEXT_PUBLIC_SUPABASE_URL:latest,NEXT_PUBLIC_SUPABASE_ANON_KEY=NEXT_PUBLIC_SUPABASE_ANON_KEY:latest"
-```
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-### 6) OAuth callback
-Set in Google console:
-```
-https://<your-web-url>/api/auth/callback/google
-```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-### 7) Post-deploy checks
-- Visit site root.
-- `/admin/login` Google OAuth flow.
-- Chat widget: should call `/api/chat` (proxied to `CHATBOT_BASE_URL`).
-- Zoho webhook (if used): `/api/zoho/webhook` proxies to chatbot.
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

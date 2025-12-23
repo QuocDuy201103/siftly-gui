@@ -1,8 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
-import React from "react";
+
 import { Button } from "@/components/ui/button";
 
-export const HeroBannerSection = (): JSX.Element => {
+export const HeroBannerSection = () => {
   const downloadButtons = [
     {
       icon: "/figmaAssets/apple.svg",

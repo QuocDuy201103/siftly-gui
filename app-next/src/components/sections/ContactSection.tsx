@@ -1,10 +1,11 @@
-import React from "react";
+
+import { useState } from "react";
 import { apiRequest } from "@/lib/queryClient";
 
-export const ContactSection = (): JSX.Element => {
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [submitError, setSubmitError] = React.useState<string | null>(null);
-  const [submitSuccess, setSubmitSuccess] = React.useState(false);
+export const ContactSection = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   return (
     <section className="flex flex-col w-full items-center gap-6 md:gap-8 lg:gap-9 py-8 md:py-10 lg:py-12 px-4">
@@ -16,7 +17,7 @@ export const ContactSection = (): JSX.Element => {
         </div>
 
         <p className="relative w-full max-w-[679px] px-4 md:px-0 font-undertitle font-[number:var(--undertitle-font-weight)] text-[#b2b8bf] text-[length:var(--undertitle-font-size)] text-center tracking-[var(--undertitle-letter-spacing)] leading-[var(--undertitle-line-height)] [font-style:var(--undertitle-font-style)]">
-          Get in touch with us. We&apos;d love to hear about your project <br className="hidden md:block" />
+          Get in touch with us. We'd love to hear about your project <br className="hidden md:block" />
           and how we can help transform your business.
         </p>
       </div>
@@ -29,7 +30,7 @@ export const ContactSection = (): JSX.Element => {
                 Thank You!
               </h3>
               <p className="text-white text-lg mb-6">
-                Your message has been sent successfully. We&apos;ll get back to you soon.
+                Your message has been sent successfully. We'll get back to you soon.
               </p>
               <button
                 type="button"

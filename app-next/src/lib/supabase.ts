@@ -9,10 +9,8 @@ let cachedClient: SupabaseClient | null = null;
 let cachedConfigChecked = false;
 
 function getBuildTimeConfig(): PublicConfig {
-  const supabaseUrl =
-    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || null;
-  const supabaseAnonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || null;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || null;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || null;
   return { supabaseUrl, supabaseAnonKey };
 }
 
@@ -34,6 +32,7 @@ export async function getSupabaseClient(): Promise<SupabaseClient | null> {
   if (cachedClient) return cachedClient;
   if (cachedConfigChecked) return null;
 
+  // Prefer build-time config for local dev, fall back to runtime config on Cloud Run.
   const buildCfg = getBuildTimeConfig();
   const cfg =
     buildCfg.supabaseUrl && buildCfg.supabaseAnonKey ? buildCfg : await getRuntimeConfig();

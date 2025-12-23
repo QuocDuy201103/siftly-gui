@@ -1,5 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
-import React from "react";
+
 
 const statistics = [
   {
@@ -16,7 +15,7 @@ const statistics = [
   },
 ];
 
-export const AnalyticsSection = (): JSX.Element => {
+export const AnalyticsSection = () => {
   return (
     <section className="flex flex-col w-full items-center gap-12 md:gap-16 lg:gap-[100px] py-12 md:py-16 lg:py-20 px-4">
       <div className="flex flex-col w-full max-w-[512px] items-center gap-4 md:gap-5">

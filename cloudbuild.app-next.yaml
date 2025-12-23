@@ -1,0 +1,51 @@
+steps:
+  # Build Docker image for app-next
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - app-next/Dockerfile
+      - -t
+      - ${_IMAGE}
+      - --build-arg
+      - CHATBOT_BASE_URL=${_CHATBOT_BASE_URL}
+      - app-next
+    id: build-app-next
+
+  # Push image to Artifact Registry (explicit push)
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_IMAGE}
+    id: push-app-next
+    waitFor: ['build-app-next']
+
+  # Deploy to Cloud Run (wait for push to complete)
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE_NAME}
+      - --image
+      - ${_IMAGE}
+      - --region
+      - ${_REGION}
+      - --allow-unauthenticated
+      - --set-env-vars
+      - NODE_ENV=production,CHATBOT_BASE_URL=${_CHATBOT_BASE_URL}
+      - --set-secrets
+      - DATABASE_URL=DATABASE_URL:latest,SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_ANON_KEY=VITE_SUPABASE_ANON_KEY:latest,SLACK_WEBHOOK_URL=SLACK_WEBHOOK_URL:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest,ALLOWED_ADMIN_EMAILS=ALLOWED_ADMIN_EMAILS:latest,NEXTAUTH_URL=NEXTAUTH_URL:latest,NEXTAUTH_SECRET=NEXTAUTH_SECRET:latest
+    id: deploy-app-next
+    waitFor: ['push-app-next']
+
+# Images section - Cloud Build will automatically push images listed here
+# after all steps complete, but we use explicit push step above to ensure
+# image is available before deployment
+images:
+  - ${_IMAGE}
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+

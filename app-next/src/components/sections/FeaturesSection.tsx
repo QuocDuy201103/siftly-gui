@@ -1,5 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
-import React from "react";
+
 import { Button } from "@/components/ui/button";
 
 const appStoreButtons = [
@@ -61,7 +60,7 @@ const features = [
   },
 ];
 
-export const FeaturesSection = (): JSX.Element => {
+export const FeaturesSection = () => {
   return (
     <section className="relative inline-flex flex-col items-center gap-8 md:gap-12 lg:gap-[68px] w-full pt-12 md:pt-16 lg:pt-20 pb-16 md:pb-24 lg:pb-32 overflow-hidden px-4">
       <img
