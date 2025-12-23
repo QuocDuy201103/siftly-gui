@@ -1,40 +1,40 @@
-# Setup Cloud Build Trigger từ Bitbucket
+# Setup Cloud Build Trigger from Bitbucket
 
-Hướng dẫn thiết lập Cloud Build trigger để tự động build và deploy khi có code push lên Bitbucket.
+Guide to set up Cloud Build trigger for automatic build and deployment when code is pushed to Bitbucket.
 
 ---
 
 ## Prerequisites
 
-1. Đã có repository trên Bitbucket
-2. Đã có GCP project với Cloud Build API enabled
-3. Đã có Artifact Registry repository ở region `us-west1`
-4. Đã có secrets trong Secret Manager
+1. Have a repository on Bitbucket
+2. Have a GCP project with Cloud Build API enabled
+3. Have an Artifact Registry repository in region `us-west1`
+4. Have secrets in Secret Manager
 
 ---
 
-## Bước 1: Kết nối Bitbucket với GCP
+## Step 1: Connect Bitbucket to GCP
 
-1. **Mở Cloud Build Console:**
-   - Vào: https://console.cloud.google.com/cloud-build/triggers
-   - Chọn project: `siftly-backend-dev`
+1. **Open Cloud Build Console:**
+   - Go to: https://console.cloud.google.com/cloud-build/triggers
+   - Select project: `siftly-backend-dev`
 
 2. **Connect Repository:**
    - Click **"Connect Repository"**
-   - Chọn **Bitbucket Cloud** hoặc **Bitbucket Server**
-   - Authorize và chọn repository của bạn
+   - Select **Bitbucket Cloud** or **Bitbucket Server**
+   - Authorize and select your repository
    - Click **Connect**
 
 ---
 
-## Bước 2: Tạo Trigger cho Chat-bot
+## Step 2: Create Trigger for Chat-bot
 
-1. **Tạo trigger mới:**
+1. **Create new trigger:**
    - Click **"Create Trigger"**
    - **Name**: `siftly-chat-bot-trigger`
    - **Event**: Push to a branch
-   - **Source**: Chọn repository đã connect
-   - **Branch**: `^main$` (hoặc branch bạn muốn)
+   - **Source**: Select the connected repository
+   - **Branch**: `^main$` (or your desired branch)
 
 2. **Configuration:**
    - **Type**: Cloud Build configuration file
@@ -48,7 +48,7 @@ Hướng dẫn thiết lập Cloud Build trigger để tự động build và de
    _IMAGE=us-west1-docker.pkg.dev/siftly-backend-dev/siftly/siftly-chat-bot:latest
    ```
 
-4. **Service account**: Để mặc định hoặc chọn service account có quyền:
+4. **Service account**: Use default or select a service account with permissions:
    - Cloud Run Admin
    - Secret Manager Secret Accessor
    - Artifact Registry Writer
@@ -57,14 +57,14 @@ Hướng dẫn thiết lập Cloud Build trigger để tự động build và de
 
 ---
 
-## Bước 3: Tạo Trigger cho Main App
+## Step 3: Create Trigger for Main App
 
-1. **Tạo trigger mới:**
+1. **Create new trigger:**
    - Click **"Create Trigger"**
    - **Name**: `siftly-web-trigger`
    - **Event**: Push to a branch
-   - **Source**: Chọn repository đã connect
-   - **Branch**: `^main$` (hoặc branch bạn muốn)
+   - **Source**: Select the connected repository
+   - **Branch**: `^main$` (or your desired branch)
 
 2. **Configuration:**
    - **Type**: Cloud Build configuration file
@@ -78,58 +78,58 @@ Hướng dẫn thiết lập Cloud Build trigger để tự động build và de
    _IMAGE=us-west1-docker.pkg.dev/siftly-backend-dev/siftly/siftly-web:latest
    _CHATBOT_BASE_URL=https://siftly-chat-bot-29216080826.us-west1.run.app
    ```
-   > **Lưu ý**: Thay `_CHATBOT_BASE_URL` bằng URL thực tế của chat-bot service
+   > **Note**: Replace `_CHATBOT_BASE_URL` with the actual chat-bot service URL
 
-4. **Service account**: Để mặc định hoặc chọn service account có quyền
+4. **Service account**: Use default or select a service account with permissions
 
 5. Click **Create**
 
 ---
 
-## Bước 4: Test Trigger
+## Step 4: Test Trigger
 
-1. **Push code lên Bitbucket:**
+1. **Push code to Bitbucket:**
    ```bash
    git add .
    git commit -m "Test Cloud Build trigger"
    git push origin main
    ```
 
-2. **Kiểm tra build:**
-   - Vào: https://console.cloud.google.com/cloud-build/builds
-   - Bạn sẽ thấy build tự động chạy
-   - Xem logs để đảm bảo build thành công
+2. **Check build:**
+   - Go to: https://console.cloud.google.com/cloud-build/builds
+   - You will see the build running automatically
+   - Check logs to ensure build succeeds
 
 ---
 
-## Cấu trúc Files
+## File Structure
 
 ```
 .
 ├── cloudbuild.yaml              # Build & deploy main app
 ├── cloudbuild.chat-bot.yaml     # Build & deploy chat-bot
-├── Dockerfile                   # Dockerfile cho main app
-└── Dockerfile.chat-bot          # Dockerfile cho chat-bot
+├── Dockerfile                   # Dockerfile for main app
+└── Dockerfile.chat-bot          # Dockerfile for chat-bot
 ```
 
 ---
 
-## Lưu ý
+## Notes
 
-1. **Thứ tự deploy:**
-   - Nên deploy chat-bot trước, sau đó deploy main app
-   - Main app cần `CHATBOT_BASE_URL` để proxy requests
+1. **Deployment order:**
+   - Should deploy chat-bot first, then deploy main app
+   - Main app needs `CHATBOT_BASE_URL` to proxy requests
 
 2. **Update CHATBOT_BASE_URL:**
-   - Nếu chat-bot URL thay đổi, cần update substitution variable trong trigger của main app
+   - If chat-bot URL changes, need to update substitution variable in main app trigger
 
 3. **Branch filtering:**
-   - Có thể tạo trigger riêng cho các branch khác nhau (dev, staging, production)
-   - Sử dụng regex pattern: `^dev$`, `^staging$`, `^main$`
+   - Can create separate triggers for different branches (dev, staging, production)
+   - Use regex pattern: `^dev$`, `^staging$`, `^main$`
 
 4. **Manual trigger:**
-   - Có thể chạy trigger thủ công từ Cloud Build Console
-   - Hoặc dùng lệnh:
+   - Can run trigger manually from Cloud Build Console
+   - Or use command:
      ```bash
      gcloud builds triggers run siftly-chat-bot-trigger --branch main
      ```
@@ -138,25 +138,24 @@ Hướng dẫn thiết lập Cloud Build trigger để tự động build và de
 
 ## Troubleshooting
 
-### Build fails với "permission denied"
-- Kiểm tra service account có đủ quyền:
+### Build fails with "permission denied"
+- Check service account has sufficient permissions:
   - Cloud Run Admin
   - Secret Manager Secret Accessor
   - Artifact Registry Writer
 
-### Build fails với "secret not found"
-- Đảm bảo secrets đã được tạo trong Secret Manager
-- Kiểm tra tên secret trong `cloudbuild.yaml` khớp với tên trong Secret Manager
+### Build fails with "secret not found"
+- Ensure secrets are created in Secret Manager
+- Check secret names in `cloudbuild.yaml` match names in Secret Manager
 
-### Deploy fails với "service not found"
-- Service sẽ được tạo tự động lần đầu
-- Nếu vẫn lỗi, kiểm tra service account có quyền Cloud Run Admin
+### Deploy fails with "service not found"
+- Service will be created automatically on first deployment
+- If still fails, check service account has Cloud Run Admin permission
 
 ---
 
-## Tài liệu tham khảo
+## References
 
 - Cloud Build Triggers: https://cloud.google.com/build/docs/triggers
 - Bitbucket Integration: https://cloud.google.com/build/docs/bitbucket
 - Cloud Run Deployment: https://cloud.google.com/run/docs/deploying
-
