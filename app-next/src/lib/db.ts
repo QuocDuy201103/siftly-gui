@@ -1,0 +1,28 @@
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import * as schema from "@shared/schema";
+
+let client: postgres.Sql | null = null;
+let db: ReturnType<typeof drizzle> | null = null;
+
+export async function connectDb() {
+  if (db) {
+    return db;
+  }
+
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL is not set");
+  }
+
+  client = postgres(process.env.DATABASE_URL, { prepare: false });
+  db = drizzle(client, { schema });
+  return db;
+}
+
+export function getDb() {
+  if (!db) {
+    throw new Error("Database not connected. Call connectDb() first.");
+  }
+  return db;
+}
+
